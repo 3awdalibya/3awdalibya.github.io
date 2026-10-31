@@ -110,7 +110,7 @@ header.top{padding-bottom:14px}
 @keyframes cppop{from{opacity:0;transform:scale(0)}to{opacity:1}}@keyframes cppulse{0%{opacity:.5;transform:scale(1)}100%{opacity:0;transform:scale(3)}}
 .cpchips{display:flex;flex-wrap:wrap;gap:8px}.cpchip{font:inherit;font-weight:700;background:#fff;color:var(--ink);border:0;border-radius:99px;padding:8px 14px;box-shadow:var(--sh);cursor:pointer}.cpchip b{background:#E8782A;color:#fff;border-radius:99px;padding:0 8px;margin-inline-start:4px;font-size:.8rem}
 .cpk{animation:cpin .45s both}.cpe{position:absolute;left:10px;top:8px;font-size:2rem;opacity:.9}
-.cpn{background:#fff;border-radius:16px;padding:14px 16px;font-weight:700;box-shadow:var(--sh);animation:cpin .4s both}@keyframes cpin{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.cpn{background:#fff;border-radius:16px;padding:0;font-weight:700;overflow:hidden;box-shadow:var(--sh);animation:cpin .4s both}@keyframes cpin{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
 
 .gbig{width:100%;min-height:170px;margin-bottom:14px;border-radius:24px}.gbig b{font-size:1.4rem}.gbig .cpe{font-size:3.4rem;opacity:.35}
 .gq{background:#fff;border-radius:16px;box-shadow:var(--sh);overflow:hidden}.gqh{font:inherit;font-weight:700;color:var(--ink);background:none;border:0;width:100%;display:flex;justify-content:space-between;align-items:center;gap:10px;padding:14px 16px;text-align:start;cursor:pointer;min-height:56px}.gqh i{font-style:normal;color:var(--brand);transition:transform .3s}
@@ -123,7 +123,7 @@ header.top{padding-bottom:14px}
 .pk{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:8px}.pk div{background:#F2F8F5;border-radius:10px;text-align:center;padding:6px 2px}.pk strong{display:block;font-size:1.3rem;color:#E8782A;line-height:1.2}.pk span{font-size:.72rem}.pk3{margin:0 0 10px}
 .pbar{height:7px;border-radius:9px;background:#E3EEE8;margin-top:10px;overflow:hidden}.pbar i{display:block;height:100%;background:linear-gradient(90deg,#4DB968,#0F7C93);transition:width .6s}
 .pch{display:flex;gap:10px;align-items:flex-end;height:120px;margin-top:8px}.pch div{flex:1;height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:2px}.pch i{display:block;width:100%;background:#4DB968;border-radius:6px;min-height:3px}.pch div:last-child i{background:#E8782A}.pch span{font-size:.72rem;color:#666}
-</style></head><body>
+.cph{font:inherit;font-weight:700;color:var(--ink);background:none;border:0;width:100%;display:flex;justify-content:space-between;align-items:center;gap:10px;padding:14px 16px;text-align:start;cursor:pointer;min-height:54px}.cph i{font-style:normal;color:var(--brand);transition:transform .3s}.cpn.open .cph i{transform:rotate(180deg)}.cpa{display:grid;grid-template-rows:0fr;transition:grid-template-rows .3s}.cpa>div{overflow:hidden;padding:0 16px;font-weight:500;line-height:1.85}.cpn.open .cpa{grid-template-rows:1fr}.cpn.open .cpa>div{padding:8px 16px 14px;border-top:1px solid var(--line)}.cpa ul{padding-right:18px;margin:6px 0}.cpa li{margin:4px 0}.cps{color:var(--brand)}.cpa .go{display:inline-block;margin-top:6px;text-decoration:none}</style></head><body>
 <div id="modal"></div><div class="toast" id="toast"></div>
 <div id="app"><p class="empty" style="margin-top:30px">جارٍ التحميل…</p></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
@@ -723,7 +723,7 @@ function cpView(){
   const D=S.cfg.cityproj;if(!D||!D.items)return '<div class="empty">لم تُحمَّل قائمة المشاريع بعد. (تحتاج تشغيل ملف SQL المرحلة 6 مرة واحدة.)</div>';
   const city=S.cpC,cat=S.cpK,I=D.items;
   const back=(t,a,v)=>'<button class="chip" data-act="'+a+'"'+(v!=null?' data-v="'+v+'"':'')+'>→ '+esc(t)+'</button>';
-  if(city&&cat){const l=I.filter(x=>x.c===city&&x.k===cat);return '<div class="card">'+back(city,'cpcat')+'<h2>'+(CPIC[cat]||'')+' '+esc(cat)+' · '+l.length+'</h2></div><div class="feed">'+l.map((x,i)=>'<div class="cpn" style="animation-delay:'+(i*40)+'ms">'+esc(x.n)+'</div>').join('')+'</div>'}
+  if(city&&cat){const l=I.filter(x=>x.c===city&&x.k===cat);return '<div class="card">'+back(city,'cpcat')+'<h2>'+(CPIC[cat]||'')+' '+esc(cat)+' · '+l.length+'</h2></div><div class="feed">'+l.map((x,i)=>{const o=S.cpO===x.n,ps=(x.i||'').split(' | ').filter(Boolean);return '<div class="cpn'+(o?' open':'')+'" style="animation-delay:'+(i*40)+'ms"><button class="cph" data-act="cpo" data-v="'+esc(x.n)+'"><span>'+esc(x.n)+'</span><i>⌄</i></button><div class="cpa"><div>'+(x.s?'<div class="cps">الحالة: <b>'+esc(x.s)+'</b></div>':'')+(ps.length?'<ul>'+ps.map(t=>'<li>'+esc(t)+'</li>').join('')+'</ul>':'<p class="hint">لا معلومات مسجّلة بعد.</p>')+(x.m?'<a class="go" href="'+esc(x.m)+'" target="_blank" rel="noopener">الموقع على الخريطة</a>':'')+'</div></div></div>'}).join('')+'</div>'}
   if(city){const ks=[...new Set(I.filter(x=>x.c===city).map(x=>x.k))];return '<div class="card">'+back('كل المدن','cpback')+'<h2>'+esc(city)+' · '+I.filter(x=>x.c===city).length+' مشروع</h2><p class="hint">اختر القسم</p></div><div class="lg4">'+ks.map((k,i)=>'<button class="lq cpk" style="background:linear-gradient(135deg,'+CPCOL[i%CPCOL.length]+','+CPCOL[(i+3)%CPCOL.length]+');animation-delay:'+(i*60)+'ms" data-act="cpk" data-v="'+esc(k)+'"><span class="cpe">'+(CPIC[k]||'')+'</span><b>'+esc(k)+'</b><small>'+I.filter(x=>x.c===city&&x.k===k).length+' مشروع</small></button>').join('')+'</div>'}
   const cnt={};I.forEach(x=>cnt[x.c]=(cnt[x.c]||0)+1);
   const IN=c=>c.x>=10.8&&c.x<=16&&c.y>=31.2;
@@ -732,7 +732,7 @@ function cpView(){
   const chips=Object.keys(cnt).sort((a,b)=>cnt[b]-cnt[a]).map(k=>'<button class="cpchip" data-act="cpc" data-v="'+esc(k)+'">'+esc(k==='عام'?'مشاريع عامة':k)+' <b>'+cnt[k]+'</b></button>').join('');
   return '<div class="card"><h2>مشاريع خطة عودة الحياة</h2><p class="hint">'+I.length+' مشروعاً قائماً · خريطة الساحل الغربي والجبل · اضغط مدينة، والمدن البعيدة من الأسفل</p></div><div class="cpmap"><svg viewBox="0 0 420 190"><defs><linearGradient id="lbg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#CFEBDD"/><stop offset="1" stop-color="#9FD4C0"/></linearGradient></defs><path class="cpl" d="'+LIBYA+'" fill="url(#lbg)"/>'+dots+'</svg></div><div class="cpchips">'+chips+'</div>';
 }
-Object.assign(ACT,{cpc:d=>{S.cpC=d.v;S.cpK=null;render();scrollTo(0,0)},cpk:d=>{S.cpK=d.v;render();scrollTo(0,0)},cpcat:()=>{S.cpK=null;render()},cpback:()=>{S.cpC=null;S.cpK=null;render()}});
+Object.assign(ACT,{cpc:d=>{S.cpC=d.v;S.cpK=null;render();scrollTo(0,0)},cpk:d=>{S.cpK=d.v;S.cpO=null;render();scrollTo(0,0)},cpcat:()=>{S.cpK=null;S.cpO=null;render()},cpo:d=>{S.cpO=S.cpO===d.v?null:d.v;render()},cpback:()=>{S.cpC=null;S.cpK=null;render()}});
 
 /* ===== Phase 7: platform guide (per-role FAQ + section purposes) ===== */
 const GSEC={

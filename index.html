@@ -116,6 +116,13 @@ header.top{padding-bottom:14px}
 .gq{background:#fff;border-radius:16px;box-shadow:var(--sh);overflow:hidden}.gqh{font:inherit;font-weight:700;color:var(--ink);background:none;border:0;width:100%;display:flex;justify-content:space-between;align-items:center;gap:10px;padding:14px 16px;text-align:start;cursor:pointer;min-height:56px}.gqh i{font-style:normal;color:var(--brand);transition:transform .3s}
 .gqa{display:grid;grid-template-rows:0fr;transition:grid-template-rows .3s}.gqa>div{overflow:hidden;padding:0 16px;line-height:1.9;color:#333}.gq.open .gqa{grid-template-rows:1fr}.gq.open .gqa>div{padding:0 16px 14px;border-top:1px solid var(--line);padding-top:10px}.gq.open .gqh i{transform:rotate(180deg)}
 .gs{background:#fff;border-radius:18px;padding:14px;box-shadow:var(--sh);animation:cpin .4s both}.gs h4{display:flex;gap:10px;align-items:center;font-size:1.05rem}.gs p{margin:6px 0 0;line-height:1.8}.gs p b{color:var(--brand)}
+
+.tg{display:flex;background:#fff;border-radius:99px;padding:4px;margin-bottom:10px;box-shadow:var(--sh)}.tg button{font:inherit;flex:1;border:0;background:none;border-radius:99px;padding:10px;font-weight:700;color:var(--ink);cursor:pointer}.tg button.on{background:var(--brand);color:#fff}
+.psm{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:8px}.psm div{background:linear-gradient(135deg,#0F7C93,#0B5F72);color:#fff;border-radius:18px;padding:12px;text-align:center}.psm strong{font-size:1.7rem;display:block}
+.pp{font:inherit;color:var(--ink);text-align:start;width:100%;background:#fff;border:0;border-radius:18px;padding:12px 14px;margin:9px 0;box-shadow:var(--sh);cursor:pointer;display:block}
+.pk{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:8px}.pk div{background:#F2F8F5;border-radius:10px;text-align:center;padding:6px 2px}.pk strong{display:block;font-size:1.3rem;color:#E8782A;line-height:1.2}.pk span{font-size:.72rem}.pk3{margin:0 0 10px}
+.pbar{height:7px;border-radius:9px;background:#E3EEE8;margin-top:10px;overflow:hidden}.pbar i{display:block;height:100%;background:linear-gradient(90deg,#4DB968,#0F7C93);transition:width .6s}
+.pch{display:flex;gap:10px;align-items:flex-end;height:120px;margin-top:8px}.pch div{flex:1;height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:2px}.pch i{display:block;width:100%;background:#4DB968;border-radius:6px;min-height:3px}.pch div:last-child i{background:#E8782A}.pch span{font-size:.72rem;color:#666}
 </style></head><body>
 <div id="modal"></div><div class="toast" id="toast"></div>
 <div id="app"><p class="empty" style="margin-top:30px">جارٍ التحميل…</p></div>
@@ -175,9 +182,10 @@ function bindChange(force){
     const {error}=await sb.auth.updateUser({password:a});if(error)return say('#cm',errAr(error),'err');await sb.rpc('password_changed');S.me.must_change=false;say('#cm','تم حفظ الرمز','ok');if(force){await loadAll();render()}};
 }
 const isFilm=()=>R()==='filming'||/التصوير/.test((S.me&&S.me.title)||'');
-const myTabs=()=>{const t=[['home','الرئيسية']];if(SHOOTR())t.push(['lists','قوائم التصوير']);t.push(['upd','متابعة المشاريع'],['cp','مشاريع خطة عودة الحياة'],['prog','برامج المنصة'],['meet','الاجتماعات'],['stats','الإحصائيات']);if(canIdea())t.push(['pid','أفكار البرامج وReel']);if(canG()&&!isFilm())t.push(['gfx','مقترحات الجرافيك']);t.push(['idea','أفكار ونشر']);if(!isFilm()&&R()!=='editing')t.push(['avoid','نبتعد عن تكراره']);t.push(['dev','صفحات الأجهزة'],['gd','دليل المنصة'],['why','لماذا أُنشئ الموقع'],['prob','مشاكل العمل بالطريقة السابقة'],['ph','دفتر أرقامي'],['bal','ملاحظة أو بلاغ'],['acc','حسابي']);if(R()==='owner')t.push(['ppl','الأشخاص']);return t};
+const myTabs=()=>{const t=[['home','الرئيسية']];if(SHOOTR())t.push(['lists','قوائم التصوير']);t.push(['upd','متابعة المشاريع'],['cp','مشاريع خطة عودة الحياة'],['prog','برامج المنصة'],['meet','الاجتماعات'],['stats','الإحصائيات']);if(canIdea())t.push(['pid','أفكار البرامج وReel']);if(canG()&&!isFilm())t.push(['gfx','مقترحات الجرافيك']);t.push(['idea','أفكار ونشر']);if(!isFilm()&&R()!=='editing')t.push(['avoid','نبتعد عن تكراره']);if(PRODV())t.push(['prod','إنتاجية الفريق']);t.push(['dev','صفحات الأجهزة'],['gd','دليل المنصة'],['why','لماذا أُنشئ الموقع'],['prob','مشاكل العمل بالطريقة السابقة'],['ph','دفتر أرقامي'],['bal','ملاحظة أو بلاغ'],['acc','حسابي']);if(R()==='owner')t.push(['ppl','الأشخاص']);return t};
 
-const ORD={writer:['gfx','avoid','dev','upd','cp','pid','meet','stats','prog'],filming:['lists','upd','cp','pid','prog','meet','stats'],editing:['pid','prog','upd','cp','meet','stats'],owner:['lists','upd','cp','gfx','pid','prog','stats','meet','ppl'],exec:['lists','upd','cp','gfx','stats','prog','meet','pid'],ops:['gfx','upd','cp','prog','meet','stats'],photographer:['lists','upd','cp','prog','meet'],follower:['upd','cp','lists','prog','meet'],helper:['upd','cp','lists','prog','meet']};
+const PRODV=()=>!!S.me&&['osama','hassan','hamza'].includes(S.me.username);
+const ORD={writer:['gfx','avoid','dev','upd','cp','pid','meet','stats','prog'],filming:['lists','upd','cp','pid','prog','meet','stats'],editing:['pid','prog','upd','cp','meet','stats'],owner:['lists','prod','upd','cp','gfx','pid','prog','stats','meet','ppl'],exec:['lists','prod','upd','cp','gfx','stats','prog','meet','pid'],ops:['gfx','upd','cp','prog','meet','stats'],photographer:['lists','upd','cp','prog','meet'],follower:['upd','cp','lists','prog','meet'],helper:['upd','cp','lists','prog','meet']};
 const ordKey=()=>(isFilm()&&R()!=='filming')?'filming':R();
 function orderedTabs(){const all=myTabs(),h=Object.fromEntries(all),out=[all[0]];(ORD[ordKey()]||[]).forEach(k=>{if(h[k])out.push([k,h[k]])});all.slice(1).forEach(t=>{if(!out.some(x=>x[0]===t[0]))out.push(t)});return out}
 const seenKey=()=>'seenIdeas_'+(S.me&&S.me.id);
@@ -201,7 +209,7 @@ async function loadAll(){
 function render(){
   if(!S.me)return;if(!myTabs().some(t=>t[0]===S.tab))S.tab='home';
   const tabs=orderedTabs(),lab=Object.fromEntries(tabs),tot=tabs.reduce((a,t)=>a+tabBadge(t[0]),0);
-  const V={gd:gdView,cp:cpView,home:homeView,lists:listsView,prog:progView,meet:meetView,stats:statsView,upd:updView,pid:pidView,gfx:gView,idea:ideaView,avoid:avoidView,dev:devView,why:whyView,prob:probView,ph:phView,bal:balView,acc:accView,ppl:pplView};
+  const V={prod:prodView,gd:gdView,cp:cpView,home:homeView,lists:listsView,prog:progView,meet:meetView,stats:statsView,upd:updView,pid:pidView,gfx:gView,idea:ideaView,avoid:avoidView,dev:devView,why:whyView,prob:probView,ph:phView,bal:balView,acc:accView,ppl:pplView};
   const item=([k,l])=>{const b=tabBadge(k);return '<button class="dmi'+(S.tab===k?' on':'')+'" data-tab="'+k+'"><span class="dic">'+hi(TABIC[k]||'more')+'</span>'+esc(l)+(b?'<span class="dn">'+b+'</span>':'')+'</button>'};
   const drawer='<div id="drw"><div class="dov" data-act="menu"></div><aside class="dpanel" role="dialog" aria-label="القائمة"><div class="dme"><img src="'+ICON+'" alt=""><div><b>'+esc(S.me.name)+'</b><small>'+esc(S.me.title||ROLES[R()])+'</small></div></div><div class="dlist">'+tabs.filter(t=>t[0]!=='acc').map(item).join('')+'</div><div class="dsep"></div><div class="dlist">'+item(['acc','حسابي'])+'<button class="dmi" data-act="logout"><span class="dic">'+hi('exit')+'</span>تسجيل الخروج</button></div></aside></div>';
   $('#app').innerHTML='<header class="top"><div class="hrow"><button class="burger" data-act="menu" aria-label="فتح القائمة">'+hi('menu')+(tot?'<span class="bd">'+tot+'</span>':'')+'</button><h1>'+(S.tab==='home'?'منصة عودة الحياة':esc(lab[S.tab]||''))+'<small>'+esc(S.me.name)+' · '+esc(S.me.title||ROLES[R()])+'</small></h1><div class="clk"><span id="clk">'+clockTxt()+'</span>'+FLAG+'</div></div></header><main>'+V[S.tab]()+'</main>'+drawer;
@@ -628,7 +636,7 @@ ACT.backup=async()=>{
 };
 /* ---------- new home (design pass) ---------- */
 const HICO={pin:'<path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/>',cam:'<path d="M4 7h3l2-3h6l2 3h3v12H4z"/><circle cx="12" cy="13" r="3.5"/>',img:'<rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="9" cy="9" r="2"/><path d="M21 16l-5-5-9 9"/>',cal:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>',act:'<path d="M3 12h4l3-8 4 16 3-8h4"/>',bulb:'<path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-4 10.5c.8.8 1 1.5 1 2.5h6c0-1 .2-1.7 1-2.5A6 6 0 0 0 12 3z"/>',tv:'<rect x="3" y="5" width="18" height="12" rx="2"/><path d="M10 9l5 3-5 3zM8 21h8"/>',chat:'<path d="M21 12a8 8 0 0 1-11.800 7L3 21l2-5.500A8 8 0 1 1 21 12z"/>',chart:'<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',ppl:'<circle cx="9" cy="8" r="3.5"/><path d="M2 20a7 7 0 0 1 14 0M16 4.5a3.5 3.5 0 0 1 0 7M22 20a7 7 0 0 0-4-6.3"/>',ok:'<path d="M5 12l5 5 9-10"/>',more:'<circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/>',ban:'<circle cx="12" cy="12" r="9"/><path d="M5.6 5.6l12.8 12.8"/>',dev:'<rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/>',info:'<circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.01"/>',warn:'<path d="M12 3l10 18H2z"/><path d="M12 10v5M12 18v.01"/>',phone:'<path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/>',flag:'<path d="M5 21V4M5 4h13l-2 4 2 4H5"/>',user:'<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',home:'<path d="M3 11l9-8 9 8v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>',menu:'<path d="M4 7h16M4 12h16M4 17h16"/>',exit:'<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/>'};
-const TABIC={gd:'info',cp:'pin',home:'home',lists:'cam',upd:'act',prog:'tv',meet:'cal',stats:'chart',pid:'bulb',gfx:'img',idea:'chat',avoid:'ban',dev:'dev',why:'info',prob:'warn',ph:'phone',bal:'flag',acc:'user',ppl:'ppl'};
+const TABIC={prod:'chart',gd:'info',cp:'pin',home:'home',lists:'cam',upd:'act',prog:'tv',meet:'cal',stats:'chart',pid:'bulb',gfx:'img',idea:'chat',avoid:'ban',dev:'dev',why:'info',prob:'warn',ph:'phone',bal:'flag',acc:'user',ppl:'ppl'};
 const hi=k=>'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">'+HICO[k]+'</svg>';
 const MYTABS={owner:['lists','upd','gfx','stats','pid','prog','ppl','meet'],exec:['lists','upd','gfx','stats','prog','meet','pid'],ops:['gfx','upd','prog','meet'],writer:['gfx','pid','upd','meet'],filming:['lists','upd','prog','pid'],photographer:['lists','upd','prog','meet'],follower:['upd','lists','prog','meet'],helper:['upd','lists','prog','meet'],editing:['pid','prog','upd','meet']};
 const SSC={'افتتاح قريب':['#F2B21A','#1E7B8C','#0B3E52','bridge'],'اكتمل البناء':['#F2B21A','#D98A2B','#6B3A12','tower'],'تم الافتتاح':['#7FD49A','#2F9E6E','#124D3F','bridge'],'وتيرة متسارعة':['#7FD49A','#2F9E6E','#124D3F','road'],'عاد للعمل':['#7FD49A','#4A7FD0','#1B2E63','road'],'توقف العمل':['#F0A595','#A23B2A','#4A1810','road'],'شيء مهم في الموقع':['#F2B21A','#7A6BD0','#2E2563','tower']};
@@ -741,6 +749,7 @@ const GSEC={
  idea:['أفكار ونشر','ما يقترحه الفريق من أفكار نشر وإضافات.','نجمع الأفكار الجيدة في مكان واحد.','تكتب فكرتك فتظهر للجميع باسمك.'],
  ph:['دفتر أرقامي','دفتر خاص بك لأرقام المهندسين والفنيين والمسؤولين.','لتجد رقم أي شخص في المشروع بسرعة.','تضيف الاسم والرقم والجهة. لا يراه غيرك.'],
  bal:['ملاحظة أو بلاغ','رسالة خاصة إلى المنسّق عن مشكلة أو ملاحظة.','لتصل مشكلتك لمن يحلّها، ويصلك الرد هنا.','تكتب وترسل. لا يراها إلا المنسّق.'],
+ prod:['إنتاجية الفريق','ما عمله كل كاتب ومتابع أسبوعياً وشهرياً: المقترحات والأفكار والتحديثات.','لمتابعة العمل بأرقام واضحة وتشجيع من يجتهد.','تختار الأسبوع أو الشهر وتضغط اسم الشخص لترى تفاصيله. تظهر لك وللإدارة فقط.'],
  ppl:['الأشخاص','إدارة حسابات الفريق وأدوارهم.','لتحديد من يدخل وماذا يرى.','تضيف الأشخاص وتحدد دور كل واحد.']
 };
 const GQ_ALL=[
@@ -811,6 +820,46 @@ function gdView(){
   return '<div class="card"><h2>دليل المنصة</h2><p class="hint">ابدأ من هنا لتفهم المنصة بسهولة.</p></div><button class="lq gbig" style="background:linear-gradient(135deg,#E8782A,#C4561A)" data-act="gdm" data-v="q"><span class="cpe">❓</span><b>أسئلة يسألها الزملاء</b><small>إجابات قصيرة وواضحة · '+qs.length+' سؤالاً</small></button><button class="lq gbig" style="background:linear-gradient(135deg,#0F7C93,#0B5F72)" data-act="gdm" data-v="s"><span class="cpe">🧭</span><b>أقسام المنصة وغرضها</b><small>ما هو كل قسم ولماذا أضفناه · '+tabs.length+' أقسام</small></button>';
 }
 Object.assign(ACT,{gdm:d=>{S.gdM=d.v;S.gdO=null;render();scrollTo(0,0)},gdf:d=>{S.gdF=d.v;S.gdO=null;render()},gdo:d=>{S.gdO=S.gdO==+d.v?null:+d.v;render()}});
+
+/* ===== Phase 8: team productivity (osama, hassan, hamza only) ===== */
+function pPeriod(mode,back){
+  const t=lt(Date.now()),y=t.getUTCFullYear(),m=t.getUTCMonth(),d=t.getUTCDate(),H=2*3600e3;
+  if(mode==='w'){const a=Date.UTC(y,m,d-((t.getUTCDay()+1)%7))-H-(back||0)*7*86400e3;return[a,a+7*86400e3]}
+  const a=Date.UTC(y,m-(back||0),1)-H,b=Date.UTC(y,m-(back||0)+1,1)-H;return[a,b]
+}
+function pStat(u,r){
+  const ins=x=>x!=null&&x>=r[0]&&x<r[1],pu=S.pu.filter(x=>x.by_id===u.id&&ins(+x.ts)),gi=S.gi.filter(x=>x.uid===u.id&&x.kind==='weekly');
+  const sent=gi.filter(x=>ins(+x.submitted_at)),ok=gi.filter(x=>ins(+x.approved_at)),pb=gi.filter(x=>ins(+x.published_at)),
+    id=(S.ideas||[]).filter(x=>x.by_id===u.id&&ins(+x.ts)),shot=Object.values(S.shot).filter(x=>x.by_id===u.id&&ins(Date.parse(x.at)));
+  const projs=new Set(pu.map(x=>x.project)).size,img=pu.filter(x=>x.media&&x.media.url).length;
+  return{u,sent:sent.length,ok:ok.length,pb:pb.length,id:id.length,pu:pu.length,img,projs,shot:shot.length,tot:sent.length+id.length+pu.length+shot.length,lists:{sent,ok,pb,id,pu}};
+}
+function prodView(){
+  if(!PRODV())return '<div class="empty">غير متاح.</div>';
+  const mode=S.prM||'w',R0=pPeriod(mode,0),R1=pPeriod(mode,1);
+  const ppl=S.people.filter(p=>p.active!==false&&['writer','follower'].includes(p.role));
+  if(S.prP){const u=ppl.find(x=>x.id===S.prP);if(u)return prodDetail(u,mode,R0)}
+  const A=ppl.map(u=>pStat(u,R0)).sort((a,b)=>b.tot-a.tot),prev=ppl.reduce((a,u)=>a+pStat(u,R1).tot,0),tot=A.reduce((a,x)=>a+x.tot,0),mx=Math.max(1,...A.map(x=>x.tot));
+  const ch=prev?Math.round((tot-prev)*100/prev):null,lab=mode==='w'?'الأسبوع':'الشهر';
+  return '<div class="tg">'+[['w','هذا الأسبوع'],['m','هذا الشهر']].map(([k,t])=>'<button class="'+(mode===k?'on':'')+'" data-act="prm" data-v="'+k+'">'+t+'</button>').join('')+'</div>'+
+  '<div class="psm"><div><strong>'+tot+'</strong>عملاً مسجّلاً</div><div><strong>'+(ch==null?'—':(ch>0?'+':'')+ch+'%')+'</strong>عن '+lab+' الماضي</div></div>'+
+  '<p class="hint">يُحسب ما سُجّل داخل المنصة فقط (مقترحات، أفكار، تحديثات). العمل خارجها لا يظهر.</p>'+
+  (A.length?A.map(x=>{const w=x.u.role==='writer';return '<button class="pp" data-act="prp" data-v="'+x.u.id+'"><div class="top2"><b>'+esc(x.u.name)+'</b><span class="hint">'+(w?'كاتب':'متابع')+'</span></div><div class="pk">'+
+   (w?'<div><strong>'+x.sent+'</strong><span>مقترح مُرسل</span></div><div><strong>'+x.ok+'</strong><span>معتمد</span></div><div><strong>'+x.id+'</strong><span>أفكار برامج</span></div>':'<div><strong>'+x.pu+'</strong><span>تحديث مشروع</span></div><div><strong>'+x.projs+'</strong><span>مشروعاً مختلفاً</span></div><div><strong>'+x.id+'</strong><span>أفكار برامج</span></div>')+
+   '</div><div class="pbar"><i style="width:'+Math.round(x.tot*100/mx)+'%"></i></div></button>'}).join(''):'<div class="empty">لا كتّاب أو متابعين بعد.</div>');
+}
+function prodDetail(u,mode,R0){
+  const x=pStat(u,R0),w=u.role==='writer',lab=mode==='w'?'هذا الأسبوع':'هذا الشهر';
+  const bars=[3,2,1,0].map(b=>{const r=pPeriod(mode,b);return{b,t:pStat(u,r).tot}}),mx=Math.max(1,...bars.map(z=>z.t));
+  const feed=[];x.lists.sent.forEach(i=>feed.push([+i.submitted_at,'اقترح «'+(i.template||i.project||'مقترح')+'»'+(i.status?' ← '+({approved:'معتمد',rejected:'مرفوض',published:'منشور',revise:'مطلوب تعديل'}[i.status]||i.status):'')]));
+  x.lists.pu.forEach(i=>feed.push([+i.ts,'تحديث: '+i.project+' · '+i.status]));x.lists.id.forEach(i=>feed.push([+i.ts,'فكرة '+(i.kind==='reel'?'ريل':'برنامج')+': '+String(i.text||'').slice(0,40)]));
+  feed.sort((a,b)=>b[0]-a[0]);
+  const kp=w?[['مقترح مُرسل',x.sent],['معتمد',x.ok],['منشور',x.pb]]:[['تحديث مشروع',x.pu],['بصور',x.img],['مشروعاً مختلفاً',x.projs]];
+  return '<div class="card"><button class="chip" data-act="prp" data-v="">→ كل الفريق</button><h2>'+esc(u.name)+' · '+lab+'</h2></div><div class="pk pk3">'+kp.map(k=>'<div><strong>'+k[1]+'</strong><span>'+k[0]+'</span></div>').join('')+'</div>'+
+  '<div class="card"><h2>آخر 4 '+(mode==='w'?'أسابيع':'أشهر')+'</h2><div class="pch">'+bars.map(z=>'<div><i style="height:'+Math.round(z.t*100/mx)+'%"></i><b>'+z.t+'</b><span>'+(z.b===0?'الحالي':'−'+z.b)+'</span></div>').join('')+'</div></div>'+
+  '<div class="card"><h2>نشاطه</h2>'+(feed.length?feed.slice(0,12).map(f=>'<div class="top2" style="border-top:1px solid var(--line);padding:6px 0"><span>'+esc(f[1])+'</span><span class="hint">'+esc(fdt(f[0]))+'</span></div>').join(''):'<p class="hint">لا نشاط في هذه الفترة.</p>')+'</div>';
+}
+Object.assign(ACT,{prm:d=>{S.prM=d.v;render()},prp:d=>{S.prP=d.v||null;render();scrollTo(0,0)}});
 ACT.lgrp=d=>{S.lg=d.v;render()};ACT.menu=()=>{const d=$('#drw');if(d)d.classList.toggle('open')};
 ACT.goto=d=>{S.tab=d.t;render()};ACT.more=()=>{S.more=!S.more;render()};
 document.addEventListener('click',e=>{const t=e.target.closest('[data-tab],[data-act]');if(!t)return;if(t.dataset.tab){S.tab=t.dataset.tab;S._hanim=0;document.body.classList.remove('hanim');render();return}const f=ACT[t.dataset.act];if(f){if(t.tagName==='A')e.preventDefault();f(t.dataset,t,e)}});

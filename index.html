@@ -111,6 +111,11 @@ header.top{padding-bottom:14px}
 .cpchips{display:flex;flex-wrap:wrap;gap:8px}.cpchip{font:inherit;font-weight:700;background:#fff;color:var(--ink);border:0;border-radius:99px;padding:8px 14px;box-shadow:var(--sh);cursor:pointer}.cpchip b{background:#E8782A;color:#fff;border-radius:99px;padding:0 8px;margin-inline-start:4px;font-size:.8rem}
 .cpk{animation:cpin .45s both}.cpe{position:absolute;left:10px;top:8px;font-size:2rem;opacity:.9}
 .cpn{background:#fff;border-radius:16px;padding:14px 16px;font-weight:700;box-shadow:var(--sh);animation:cpin .4s both}@keyframes cpin{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+
+.gbig{width:100%;min-height:170px;margin-bottom:14px;border-radius:24px}.gbig b{font-size:1.4rem}.gbig .cpe{font-size:3.4rem;opacity:.35}
+.gq{background:#fff;border-radius:16px;box-shadow:var(--sh);overflow:hidden}.gqh{font:inherit;font-weight:700;color:var(--ink);background:none;border:0;width:100%;display:flex;justify-content:space-between;align-items:center;gap:10px;padding:14px 16px;text-align:start;cursor:pointer;min-height:56px}.gqh i{font-style:normal;color:var(--brand);transition:transform .3s}
+.gqa{display:grid;grid-template-rows:0fr;transition:grid-template-rows .3s}.gqa>div{overflow:hidden;padding:0 16px;line-height:1.9;color:#333}.gq.open .gqa{grid-template-rows:1fr}.gq.open .gqa>div{padding:0 16px 14px;border-top:1px solid var(--line);padding-top:10px}.gq.open .gqh i{transform:rotate(180deg)}
+.gs{background:#fff;border-radius:18px;padding:14px;box-shadow:var(--sh);animation:cpin .4s both}.gs h4{display:flex;gap:10px;align-items:center;font-size:1.05rem}.gs p{margin:6px 0 0;line-height:1.8}.gs p b{color:var(--brand)}
 </style></head><body>
 <div id="modal"></div><div class="toast" id="toast"></div>
 <div id="app"><p class="empty" style="margin-top:30px">جارٍ التحميل…</p></div>
@@ -170,7 +175,7 @@ function bindChange(force){
     const {error}=await sb.auth.updateUser({password:a});if(error)return say('#cm',errAr(error),'err');await sb.rpc('password_changed');S.me.must_change=false;say('#cm','تم حفظ الرمز','ok');if(force){await loadAll();render()}};
 }
 const isFilm=()=>R()==='filming'||/التصوير/.test((S.me&&S.me.title)||'');
-const myTabs=()=>{const t=[['home','الرئيسية']];if(SHOOTR())t.push(['lists','قوائم التصوير']);t.push(['upd','متابعة المشاريع'],['cp','مشاريع خطة عودة الحياة'],['prog','برامج المنصة'],['meet','الاجتماعات'],['stats','الإحصائيات']);if(canIdea())t.push(['pid','أفكار البرامج وReel']);if(canG()&&!isFilm())t.push(['gfx','مقترحات الجرافيك']);t.push(['idea','أفكار ونشر']);if(!isFilm()&&R()!=='editing')t.push(['avoid','نبتعد عن تكراره']);t.push(['dev','صفحات الأجهزة'],['why','لماذا أُنشئ الموقع'],['prob','مشاكل العمل بالطريقة السابقة'],['ph','دفتر أرقامي'],['bal','ملاحظة أو بلاغ'],['acc','حسابي']);if(R()==='owner')t.push(['ppl','الأشخاص']);return t};
+const myTabs=()=>{const t=[['home','الرئيسية']];if(SHOOTR())t.push(['lists','قوائم التصوير']);t.push(['upd','متابعة المشاريع'],['cp','مشاريع خطة عودة الحياة'],['prog','برامج المنصة'],['meet','الاجتماعات'],['stats','الإحصائيات']);if(canIdea())t.push(['pid','أفكار البرامج وReel']);if(canG()&&!isFilm())t.push(['gfx','مقترحات الجرافيك']);t.push(['idea','أفكار ونشر']);if(!isFilm()&&R()!=='editing')t.push(['avoid','نبتعد عن تكراره']);t.push(['dev','صفحات الأجهزة'],['gd','دليل المنصة'],['why','لماذا أُنشئ الموقع'],['prob','مشاكل العمل بالطريقة السابقة'],['ph','دفتر أرقامي'],['bal','ملاحظة أو بلاغ'],['acc','حسابي']);if(R()==='owner')t.push(['ppl','الأشخاص']);return t};
 
 const ORD={writer:['gfx','avoid','dev','upd','cp','pid','meet','stats','prog'],filming:['lists','upd','cp','pid','prog','meet','stats'],editing:['pid','prog','upd','cp','meet','stats'],owner:['lists','upd','cp','gfx','pid','prog','stats','meet','ppl'],exec:['lists','upd','cp','gfx','stats','prog','meet','pid'],ops:['gfx','upd','cp','prog','meet','stats'],photographer:['lists','upd','cp','prog','meet'],follower:['upd','cp','lists','prog','meet'],helper:['upd','cp','lists','prog','meet']};
 const ordKey=()=>(isFilm()&&R()!=='filming')?'filming':R();
@@ -196,7 +201,7 @@ async function loadAll(){
 function render(){
   if(!S.me)return;if(!myTabs().some(t=>t[0]===S.tab))S.tab='home';
   const tabs=orderedTabs(),lab=Object.fromEntries(tabs),tot=tabs.reduce((a,t)=>a+tabBadge(t[0]),0);
-  const V={cp:cpView,home:homeView,lists:listsView,prog:progView,meet:meetView,stats:statsView,upd:updView,pid:pidView,gfx:gView,idea:ideaView,avoid:avoidView,dev:devView,why:whyView,prob:probView,ph:phView,bal:balView,acc:accView,ppl:pplView};
+  const V={gd:gdView,cp:cpView,home:homeView,lists:listsView,prog:progView,meet:meetView,stats:statsView,upd:updView,pid:pidView,gfx:gView,idea:ideaView,avoid:avoidView,dev:devView,why:whyView,prob:probView,ph:phView,bal:balView,acc:accView,ppl:pplView};
   const item=([k,l])=>{const b=tabBadge(k);return '<button class="dmi'+(S.tab===k?' on':'')+'" data-tab="'+k+'"><span class="dic">'+hi(TABIC[k]||'more')+'</span>'+esc(l)+(b?'<span class="dn">'+b+'</span>':'')+'</button>'};
   const drawer='<div id="drw"><div class="dov" data-act="menu"></div><aside class="dpanel" role="dialog" aria-label="القائمة"><div class="dme"><img src="'+ICON+'" alt=""><div><b>'+esc(S.me.name)+'</b><small>'+esc(S.me.title||ROLES[R()])+'</small></div></div><div class="dlist">'+tabs.filter(t=>t[0]!=='acc').map(item).join('')+'</div><div class="dsep"></div><div class="dlist">'+item(['acc','حسابي'])+'<button class="dmi" data-act="logout"><span class="dic">'+hi('exit')+'</span>تسجيل الخروج</button></div></aside></div>';
   $('#app').innerHTML='<header class="top"><div class="hrow"><button class="burger" data-act="menu" aria-label="فتح القائمة">'+hi('menu')+(tot?'<span class="bd">'+tot+'</span>':'')+'</button><h1>'+(S.tab==='home'?'منصة عودة الحياة':esc(lab[S.tab]||''))+'<small>'+esc(S.me.name)+' · '+esc(S.me.title||ROLES[R()])+'</small></h1><div class="clk"><span id="clk">'+clockTxt()+'</span>'+FLAG+'</div></div></header><main>'+V[S.tab]()+'</main>'+drawer;
@@ -623,7 +628,7 @@ ACT.backup=async()=>{
 };
 /* ---------- new home (design pass) ---------- */
 const HICO={pin:'<path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/>',cam:'<path d="M4 7h3l2-3h6l2 3h3v12H4z"/><circle cx="12" cy="13" r="3.5"/>',img:'<rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="9" cy="9" r="2"/><path d="M21 16l-5-5-9 9"/>',cal:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>',act:'<path d="M3 12h4l3-8 4 16 3-8h4"/>',bulb:'<path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-4 10.5c.8.8 1 1.5 1 2.5h6c0-1 .2-1.7 1-2.5A6 6 0 0 0 12 3z"/>',tv:'<rect x="3" y="5" width="18" height="12" rx="2"/><path d="M10 9l5 3-5 3zM8 21h8"/>',chat:'<path d="M21 12a8 8 0 0 1-11.800 7L3 21l2-5.500A8 8 0 1 1 21 12z"/>',chart:'<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',ppl:'<circle cx="9" cy="8" r="3.5"/><path d="M2 20a7 7 0 0 1 14 0M16 4.5a3.5 3.5 0 0 1 0 7M22 20a7 7 0 0 0-4-6.3"/>',ok:'<path d="M5 12l5 5 9-10"/>',more:'<circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/>',ban:'<circle cx="12" cy="12" r="9"/><path d="M5.6 5.6l12.8 12.8"/>',dev:'<rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/>',info:'<circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.01"/>',warn:'<path d="M12 3l10 18H2z"/><path d="M12 10v5M12 18v.01"/>',phone:'<path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/>',flag:'<path d="M5 21V4M5 4h13l-2 4 2 4H5"/>',user:'<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',home:'<path d="M3 11l9-8 9 8v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>',menu:'<path d="M4 7h16M4 12h16M4 17h16"/>',exit:'<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/>'};
-const TABIC={cp:'pin',home:'home',lists:'cam',upd:'act',prog:'tv',meet:'cal',stats:'chart',pid:'bulb',gfx:'img',idea:'chat',avoid:'ban',dev:'dev',why:'info',prob:'warn',ph:'phone',bal:'flag',acc:'user',ppl:'ppl'};
+const TABIC={gd:'info',cp:'pin',home:'home',lists:'cam',upd:'act',prog:'tv',meet:'cal',stats:'chart',pid:'bulb',gfx:'img',idea:'chat',avoid:'ban',dev:'dev',why:'info',prob:'warn',ph:'phone',bal:'flag',acc:'user',ppl:'ppl'};
 const hi=k=>'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">'+HICO[k]+'</svg>';
 const MYTABS={owner:['lists','upd','gfx','stats','pid','prog','ppl','meet'],exec:['lists','upd','gfx','stats','prog','meet','pid'],ops:['gfx','upd','prog','meet'],writer:['gfx','pid','upd','meet'],filming:['lists','upd','prog','pid'],photographer:['lists','upd','prog','meet'],follower:['upd','lists','prog','meet'],helper:['upd','lists','prog','meet'],editing:['pid','prog','upd','meet']};
 const SSC={'افتتاح قريب':['#F2B21A','#1E7B8C','#0B3E52','bridge'],'اكتمل البناء':['#F2B21A','#D98A2B','#6B3A12','tower'],'تم الافتتاح':['#7FD49A','#2F9E6E','#124D3F','bridge'],'وتيرة متسارعة':['#7FD49A','#2F9E6E','#124D3F','road'],'عاد للعمل':['#7FD49A','#4A7FD0','#1B2E63','road'],'توقف العمل':['#F0A595','#A23B2A','#4A1810','road'],'شيء مهم في الموقع':['#F2B21A','#7A6BD0','#2E2563','tower']};
@@ -720,6 +725,92 @@ function cpView(){
   return '<div class="card"><h2>مشاريع خطة عودة الحياة</h2><p class="hint">'+I.length+' مشروعاً قائماً · خريطة الساحل الغربي والجبل · اضغط مدينة، والمدن البعيدة من الأسفل</p></div><div class="cpmap"><svg viewBox="0 0 420 190"><defs><linearGradient id="lbg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#CFEBDD"/><stop offset="1" stop-color="#9FD4C0"/></linearGradient></defs><path class="cpl" d="'+LIBYA+'" fill="url(#lbg)"/>'+dots+'</svg></div><div class="cpchips">'+chips+'</div>';
 }
 Object.assign(ACT,{cpc:d=>{S.cpC=d.v;S.cpK=null;render();scrollTo(0,0)},cpk:d=>{S.cpK=d.v;render();scrollTo(0,0)},cpcat:()=>{S.cpK=null;render()},cpback:()=>{S.cpC=null;S.cpK=null;render()}});
+
+/* ===== Phase 7: platform guide (per-role FAQ + section purposes) ===== */
+const GSEC={
+ lists:['قوائم التصوير','مشاريع ننتظر تصويرها بترتيب الأهمية، في أربع بطاقات: التحديث اليومي، تعال نقولك، حلقات الطاهر، حلقات صلاح زايد.','حتى لا يضيع مشروع مهم، ولنعرف ما صُوّر وما بقي.','تختار البطاقة ثم تضغط «تم التصوير» على كل مشروع بعد الانتهاء.'],
+ upd:['متابعة المشاريع','سجلّ ما يحدث في الميدان: حالة كل مشروع وصوره وملاحظاته.','لنعرف آخر وضع للمشاريع من مصدر واحد، وتظهر أحدث التحديثات في الرئيسية.','تسجّل تحديثاً: اسم المشروع، الحالة، ملاحظة، وصورة إن وجدت.'],
+ cp:['مشاريع خطة عودة الحياة','المشاريع القائمة مرتبة بالمدينة ثم القسم (طرق، صحة، تعليم…) بأسمائها فقط.','لتجد أي مشروع بسرعة دون بحث في ملفات طويلة.','تختار مدينة ثم قسماً فتظهر الأسماء.'],
+ pid:['أفكار البرامج والريل','أفكار يقدمها أعضاء الفريق لبرامج جديدة أو لمونتاج الريل، وتصل إلى من سينفذها.','كل فكرة جيدة يجب أن تصل لمن ينفذها، وتظهر في رئيسيته بشارة «جديد».','تكتب الفكرة وتضيف رابطاً مرجعياً أو صورة إن أردت، ثم ترسلها باسمك. المنفّذ يقرأها وينفّذ.'],
+ gfx:['مقترحات الجرافيك','مقترحاتك الأسبوعية للتصاميم، ويصلك قرار المراجعة وملاحظاتها.','لتنظيم دورة المقترحات وتتبع ما قُبل وما نُشر.','تكتب المقترح ثم ترسله. وتجد مقترحاتك المقبولة وملاحظات المنسّق.'],
+ avoid:['نبتعد عن تكراره','أفكار جرافيك تكررت كثيراً في الأرشيف.','حتى لا نكرر نفس الفكرة، ولا نقترح إلا ما فيه جديد.','تطّلع عليها قبل كتابة مقترحك.'],
+ dev:['صفحات الأجهزة','روابط وصور صفحات الجهات التي تنشر عن المشاريع.','لنرى ما تنشره الجهات الأخرى ونتجنب التكرار.','تفتح الصفحة بالضغط عليها.'],
+ meet:['الاجتماعات','مواعيد الاجتماعات القادمة والسابقة ومخرجاتها.','لا يفوتك موعد، وتجد ما اتُّفق عليه.','تراجع الموعد القادم وتقرأ مخرجات السابقة.'],
+ stats:['الإحصائيات','أرقام ونسب: الفيديو والجرافيك والمشاريع حسب المدن.','لنفهم حجم ما أُنجز دون تعقيد.','للاطلاع فقط.'],
+ prog:['برامج المنصة','حلقات كل برنامج: تعال نقولك، الطاهر، صلاح زايد.','لنعرف ما نُشر من كل برنامج وآخر حلقة.','تختار البرنامج وتراجع حلقاته.'],
+ idea:['أفكار ونشر','ما يقترحه الفريق من أفكار نشر وإضافات.','نجمع الأفكار الجيدة في مكان واحد.','تكتب فكرتك فتظهر للجميع باسمك.'],
+ ph:['دفتر أرقامي','دفتر خاص بك لأرقام المهندسين والفنيين والمسؤولين.','لتجد رقم أي شخص في المشروع بسرعة.','تضيف الاسم والرقم والجهة. لا يراه غيرك.'],
+ bal:['ملاحظة أو بلاغ','رسالة خاصة إلى المنسّق عن مشكلة أو ملاحظة.','لتصل مشكلتك لمن يحلّها، ويصلك الرد هنا.','تكتب وترسل. لا يراها إلا المنسّق.'],
+ ppl:['الأشخاص','إدارة حسابات الفريق وأدوارهم.','لتحديد من يدخل وماذا يرى.','تضيف الأشخاص وتحدد دور كل واحد.']
+};
+const GQ_ALL=[
+ ['الدخول','نسيت كلمة المرور، ماذا أفعل؟','أخبر المنسّق ليعيد لك كلمة الدخول، ثم غيّرها بنفسك من «حسابي».'],
+ ['الدخول','كيف أغيّر كلمة المرور؟','من القائمة اختر «حسابي» ثم تغيير كلمة المرور.'],
+ ['الاستخدام','أين القائمة؟','علامة الثلاث خطوط أعلى اليمين. اضغطها فتظهر كل الأقسام.'],
+ ['الاستخدام','ما الرقم البرتقالي على علامة القائمة؟','يعني أن هناك جديداً لم تره بعد، افتح القائمة وانظر أي قسم عليه رقم.'],
+ ['الاستخدام','لماذا لا أرى بعض الأقسام؟','لأن الأقسام تُعرض حسب عملك فقط حتى لا تتشتت.'],
+ ['الاستخدام','كيف أخرج من حسابي؟','آخر القائمة: «تسجيل الخروج».'],
+ ['الاستخدام','وجدت خطأ أو مشكلة، لمن أبلّغ؟','من القائمة اختر «ملاحظة أو بلاغ» وأرسل للمنسّق. يصلك الرد في نفس الصفحة.'],
+ ['الخصوصية','من يرى ما أكتبه؟','الأفكار والتحديثات يراها الفريق باسمك. دفتر أرقامك وملاحظاتك للمنسّق خاصة.']
+];
+const GQ={
+ writer:[
+  ['الجرافيك','كيف أرسل مقترح جرافيك؟','افتح «مقترحات الجرافيك»، اكتب مقترحك ثم أرسله. يصلك قرار المنسّق وملاحظته في نفس القسم.'],
+  ['الجرافيك','لماذا لا يصل مقترحي للقائمة الأسبوعية؟','لا تدخل المقترحات القائمة الأسبوعية إلا إذا نقلتها أنت بنفسك. المسودة التي لم ترسلها لا يراها أحد.'],
+  ['الجرافيك','ما فائدة «نبتعد عن تكراره»؟','يعرض الأفكار التي تكررت كثيراً، فتتجنبها أو تضيف عليها جديداً.'],
+  ['المشاريع','كيف أجد مشروعاً معيناً؟','افتح «مشاريع خطة عودة الحياة»، اختر المدينة ثم القسم فتظهر الأسماء.'],
+  ['الأفكار','كيف أقترح فكرة برنامج أو ريل؟','«أفكار البرامج والريل» ثم اكتب الفكرة وأرسلها. تصل لمن سينفذها.']
+ ],
+ filming:[
+  ['التصوير','أين قائمة التصوير؟','القائمة الجانبية ثم «قوائم التصوير»، وفيها أربع بطاقات ملوّنة. اضغط البطاقة فتظهر مشاريعها.'],
+  ['التصوير','كيف أعلّم مشروعاً أنه صُوّر؟','داخل المشروع اضغط «تم التصوير». يزيد تقدّم البطاقة تلقائياً.'],
+  ['التصوير','متى أضغط «تم التصوير»؟','بعد انتهاء التصوير فعلاً، حتى لا يبدو مشروع مصوراً وهو ليس كذلك.'],
+  ['الأفكار','أين أرى أفكار الزملاء للبرامج والريل؟','في أعلى الرئيسية شرائح كبيرة، وأي فكرة جديدة عليها «جديد». وتجدها كلها في «أفكار البرامج والريل».'],
+  ['الأفكار','كيف أضيف فكرة؟','«أفكار البرامج والريل» ثم اكتب الفكرة، ويمكنك إضافة رابط مرجعي.']
+ ],
+ editing:[
+  ['المونتاج','أين أرى أفكار الريل الجديدة؟','في أعلى الرئيسية شرائح كبيرة، وفي «أفكار البرامج والريل» تجدها كلها مع الرابط المرجعي.'],
+  ['المونتاج','ماذا أفعل بالفكرة التي تعجبني؟','تتواصل مع صاحبها أو المنسّق، وتبدأ التنفيذ. اسم صاحب الفكرة ظاهر عليها.'],
+  ['المشاريع','كيف أعرف ما صُوّر حديثاً؟','«متابعة المشاريع» تعرض آخر التحديثات والصور من الميدان.']
+ ],
+ follower:[
+  ['التحديثات','كيف أسجّل تحديثاً عن مشروع؟','«متابعة المشاريع»: اختر المشروع، حالته، اكتب ملاحظة وأضف صورة ثم احفظ. يظهر للجميع في الرئيسية.'],
+  ['التحديثات','ماذا لو أخطأت في التحديث؟','عدّل أو احذف تحديثك من نفس الصفحة.'],
+  ['التحديثات','هل الصور ضرورية؟','لا، لكنها تجعل التحديث أوضح وتظهر في شرائح الرئيسية.']
+ ],
+ photographer:[
+  ['التصوير','أين أرى ما يجب تصويره؟','«قوائم التصوير»، اختر البطاقة المناسبة.'],
+  ['التصوير','كيف أبيّن أنني صوّرت المشروع؟','اضغط «تم التصوير» داخل المشروع.']
+ ],
+ owner:[
+  ['الإدارة','كيف أضيف شخصاً جديداً؟','«الأشخاص» ثم إضافة. الكلمة الأولية هي اسم المستخدم مع 2026 وتُغيَّر عند أول دخول.'],
+  ['الإدارة','كيف أنشئ قائمة التصوير؟','عندما تطلب مني ذلك أنشئها وأرفعها. لا شيء يُنشأ تلقائياً.'],
+  ['الإدارة','أين أرد على البلاغات؟','«ملاحظة أو بلاغ»، كل بلاغ فيه خانة للرد.']
+ ],
+ exec:[
+  ['المتابعة','كيف أراجع مقترحات الجرافيك؟','«مقترحات الجرافيك»، افتح المقترح واكتب قرارك وملاحظتك.'],
+  ['المتابعة','كيف أجدول اجتماعاً؟','«الاجتماعات» ثم اجتماع جديد، اكتب العنوان واليوم والساعة.']
+ ],
+ ops:[
+  ['المتابعة','كيف أراجع مقترحات الجرافيك؟','«مقترحات الجرافيك»، افتح المقترح واكتب قرارك وملاحظتك.']
+ ],
+ helper:[['التحديثات','أين أسجّل ما أعمله؟','«متابعة المشاريع».']]
+};
+function gdView(){
+  const k=ordKey(),qs=GQ_ALL.concat(GQ[k]||[]).sort((a,b)=>(GQ[k]||[]).includes(b)-(GQ[k]||[]).includes(a));
+  const tabs=orderedTabs().map(t=>t[0]).filter(t=>GSEC[t]);
+  const mode=S.gdM;
+  const hd=back=>'<div class="card">'+(back?'<button class="chip" data-act="gdm" data-v="">→ دليل المنصة</button>':'')+'</div>';
+  if(mode==='q'){
+    const cats=['الكل',...new Set(qs.map(q=>q[0]))],f=S.gdF||'الكل';
+    return '<div class="card"><button class="chip" data-act="gdm" data-v="">→ دليل المنصة</button><h2>الأسئلة المتوقعة</h2><div class="chips">'+cats.map(c=>'<button class="chip" aria-pressed="'+(c===f)+'" data-act="gdf" data-v="'+esc(c)+'">'+esc(c)+'</button>').join('')+'</div></div><div class="feed">'+qs.map((q,i)=>({q,i})).filter(x=>f==='الكل'||x.q[0]===f).map(x=>'<div class="gq'+(S.gdO===x.i?' open':'')+'"><button class="gqh" data-act="gdo" data-v="'+x.i+'"><span>'+esc(x.q[1])+'</span><i>⌄</i></button><div class="gqa"><div>'+esc(x.q[2])+'</div></div></div>').join('')+'</div>';
+  }
+  if(mode==='s'){
+    return '<div class="card"><button class="chip" data-act="gdm" data-v="">→ دليل المنصة</button><h2>أقسام المنصة وغرضها</h2><p class="hint">هذه الأقسام التي تخصك فقط.</p></div><div class="feed">'+tabs.map((t,i)=>{const g=GSEC[t];return '<div class="sec gs" style="animation-delay:'+(i*50)+'ms"><h4><span class="dic">'+hi(TABIC[t]||'more')+'</span>'+esc(g[0])+'</h4><p><b>ما هو:</b> '+esc(g[1])+'</p><p><b>لماذا أضفناه:</b> '+esc(g[2])+'</p><p><b>ماذا أفعل فيه:</b> '+esc(g[3])+'</p></div>'}).join('')+'</div>';
+  }
+  return '<div class="card"><h2>دليل المنصة</h2><p class="hint">ابدأ من هنا لتفهم المنصة بسهولة.</p></div><button class="lq gbig" style="background:linear-gradient(135deg,#E8782A,#C4561A)" data-act="gdm" data-v="q"><span class="cpe">❓</span><b>أسئلة يسألها الزملاء</b><small>إجابات قصيرة وواضحة · '+qs.length+' سؤالاً</small></button><button class="lq gbig" style="background:linear-gradient(135deg,#0F7C93,#0B5F72)" data-act="gdm" data-v="s"><span class="cpe">🧭</span><b>أقسام المنصة وغرضها</b><small>ما هو كل قسم ولماذا أضفناه · '+tabs.length+' أقسام</small></button>';
+}
+Object.assign(ACT,{gdm:d=>{S.gdM=d.v;S.gdO=null;render();scrollTo(0,0)},gdf:d=>{S.gdF=d.v;S.gdO=null;render()},gdo:d=>{S.gdO=S.gdO==+d.v?null:+d.v;render()}});
 ACT.lgrp=d=>{S.lg=d.v;render()};ACT.menu=()=>{const d=$('#drw');if(d)d.classList.toggle('open')};
 ACT.goto=d=>{S.tab=d.t;render()};ACT.more=()=>{S.more=!S.more;render()};
 document.addEventListener('click',e=>{const t=e.target.closest('[data-tab],[data-act]');if(!t)return;if(t.dataset.tab){S.tab=t.dataset.tab;S._hanim=0;document.body.classList.remove('hanim');render();return}const f=ACT[t.dataset.act];if(f){if(t.tagName==='A')e.preventDefault();f(t.dataset,t,e)}});

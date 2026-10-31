@@ -30,7 +30,11 @@ button{font:inherit}.go{font-weight:600;background:var(--brand);color:#fff;borde
 .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}@media(max-width:520px){.row2{grid-template-columns:1fr}}
 .login{max-width:420px;margin:0 auto;padding-top:max(40px,env(safe-area-inset-top));text-align:center}.login img{width:96px;height:96px;border-radius:50%;border:3px solid var(--g)}
 .login h1{font:700 1.3rem var(--disp);color:var(--brand);margin:12px 0 4px}.login .card{text-align:right;margin-top:18px}
+table.gt{border-collapse:collapse;width:100%;min-width:760px;font-size:.9rem}.gt th{background:var(--brand);color:#fff;text-align:right;padding:8px 10px}.gt td{padding:8px 10px;border-top:1px solid var(--line);vertical-align:top}
+.sheet-bg{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:50;display:flex;align-items:flex-end;justify-content:center}.sheet{background:var(--bg);width:100%;max-width:760px;max-height:92%;overflow:auto;border-radius:14px 14px 0 0;padding:16px 16px 28px;display:flex;flex-direction:column;gap:10px}@media(min-width:700px){.sheet-bg{align-items:center}.sheet{border-radius:14px}}
+.toast{position:fixed;inset-inline:0;bottom:16px;display:flex;justify-content:center;z-index:80;pointer-events:none}.toast span{background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:999px}
 </style></head><body>
+<div id="modal"></div><div class="toast" id="toast"></div>
 <div id="app"><p class="empty" style="margin-top:30px">جارٍ التحميل…</p></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script>
@@ -48,8 +52,8 @@ const ftime=t=>{const d=lt(t),h=d.getUTCHours();return (h%12||12)+':'+pad(d.getU
 const fdt=t=>{const d=lt(t);return pad(d.getUTCDate())+'/'+pad(d.getUTCMonth()+1)+' '+pad(d.getUTCHours())+':'+pad(d.getUTCMinutes())};
 const clockTxt=()=>{const d=lt(Date.now());return ftime(Date.now())+' · '+d.getUTCDate()+' '+AR[d.getUTCMonth()]};
 setInterval(()=>{const e=$('#clk');if(e)e.textContent=clockTxt()},15000);
-const S={me:null,tab:'home',lists:[],cur:null,shot:{},people:[],cfg:{},meetings:[],notes:[],occ:[],swaps:[],devices:[],phones:[],reports:[],pub:[],ideas:[],open:{},pt:'prog',pg:'تعال نقولك 2026',pgi:0,F:{},msg:''};
-const LINKS=[{t:'مقترحات الجرافيك',d:'الكتابة والمراجعة والمعتمد',u:'https://claude.ai/artifact/KZcS5wtJSYsW3D2omLcCKZ',r:['writer','ops','exec','owner']},{t:'متابعة المشاريع',d:'تحديثات المشاريع',u:'https://claude.ai/artifact/17zHwKbK3Fk5dgbFmgw2sY',r:['follower','helper','filming','exec','ops','writer','owner']}];
+const S={gi:[],gp:{},gt:null,gf:'all',gaf:'all',gq:'',me:null,tab:'home',lists:[],cur:null,shot:{},people:[],cfg:{},meetings:[],notes:[],occ:[],swaps:[],devices:[],phones:[],reports:[],pub:[],ideas:[],open:{},pt:'prog',pg:'تعال نقولك 2026',pgi:0,F:{},msg:''};
+const LINKS=[{t:'الجرافيك القديم (أرشيف)',d:'البيانات السابقة قبل الانتقال للموقع',u:'https://claude.ai/artifact/KZcS5wtJSYsW3D2omLcCKZ',r:['owner']},{t:'متابعة المشاريع',d:'تحديثات المشاريع',u:'https://claude.ai/artifact/17zHwKbK3Fk5dgbFmgw2sY',r:['follower','helper','filming','exec','ops','writer','owner']}];
 const mail=u=>String(u).trim().toLowerCase()+'@3awda.app';
 const say=(id,t,c)=>{const m=$(id);if(m){m.textContent=t;m.className='msg '+(c||'')}};
 const errAr=e=>{const m=(e&&e.message)||'';if(/Invalid login/i.test(m))return 'اسم المستخدم أو الرمز غير صحيح';if(/banned/i.test(m))return 'الحساب موقوف';if(/same password/i.test(m))return 'اختر رمزاً مختلفاً عن الحالي';if(/row-level security/i.test(m))return 'غير مسموح لك بهذا الإجراء';return m||'حدث خطأ'};
@@ -87,19 +91,21 @@ function bindChange(force){
   b.onclick=async()=>{const a=$('#n1').value,c=$('#n2').value;if(a.length<6)return say('#cm','الرمز أقل من 6 خانات','err');if(a!==c)return say('#cm','الرمزان غير متطابقين','err');
     const {error}=await sb.auth.updateUser({password:a});if(error)return say('#cm',errAr(error),'err');await sb.rpc('password_changed');S.me.must_change=false;say('#cm','تم حفظ الرمز','ok');if(force){await loadAll();render()}};
 }
-const myTabs=()=>{const t=[['home','الرئيسية']];if(SHOOTR())t.push(['lists','قوائم التصوير']);t.push(['prog','برامج المنصة'],['meet','الاجتماعات'],['stats','الإحصائيات']);if(canIdea())t.push(['pid','أفكار البرامج وReel']);t.push(['idea','أفكار ونشر'],['avoid','نبتعد عن تكراره'],['dev','صفحات الأجهزة'],['why','لماذا أُنشئ الموقع'],['prob','مشاكل العمل بالطريقة السابقة'],['ph','دفتر أرقامي'],['bal','ملاحظة أو بلاغ'],['acc','حسابي']);if(R()==='owner')t.push(['ppl','الأشخاص']);return t};
+const myTabs=()=>{const t=[['home','الرئيسية']];if(SHOOTR())t.push(['lists','قوائم التصوير']);t.push(['prog','برامج المنصة'],['meet','الاجتماعات'],['stats','الإحصائيات']);if(canIdea())t.push(['pid','أفكار البرامج وReel']);if(canG())t.push(['gfx','مقترحات الجرافيك']);t.push(['idea','أفكار ونشر'],['avoid','نبتعد عن تكراره'],['dev','صفحات الأجهزة'],['why','لماذا أُنشئ الموقع'],['prob','مشاكل العمل بالطريقة السابقة'],['ph','دفتر أرقامي'],['bal','ملاحظة أو بلاغ'],['acc','حسابي']);if(R()==='owner')t.push(['ppl','الأشخاص']);return t};
 async function loadAll(){
   const q=async p=>{try{const r=await p;return r.error?[]:(r.data||[])}catch(e){return[]}};
   const J={cfg:sb.from('config').select('*'),meetings:sb.from('meetings').select('*').order('at'),notes:sb.from('meeting_notes').select('*'),occ:sb.from('occasions').select('*'),swaps:sb.from('swaps').select('*'),devices:sb.from('devices').select('*').order('ts'),phones:sb.from('phones').select('*').order('name'),reports:sb.from('reports').select('*').order('ts',{ascending:false}),pub:sb.from('pub_ideas').select('*').order('ts',{ascending:false}).limit(300),ideas:sb.from('ideas').select('*').order('ts',{ascending:false}),people:sb.from('profiles').select('*').order('created_at')};
+  if(canG()){J.gi=sb.from('gitems').select('*').order('updated_at',{ascending:false}).limit(3000);if(R()==='owner')J.gp=sb.from('gpriv').select('*')}
   if(SHOOTR()){J.lists=sb.from('lists').select('*').order('date',{ascending:false});J.shot=sb.from('shot').select('*')}
   const ks=Object.keys(J);const rs=await Promise.all(ks.map(k=>q(J[k])));const o={};ks.forEach((k,i)=>o[k]=rs[i]);
   S.cfg={};o.cfg.forEach(x=>S.cfg[x.key]=x.value);['meetings','notes','occ','swaps','devices','phones','reports','pub','ideas','people'].forEach(k=>S[k]=o[k]);
+  S.gi=o.gi||[];S.gp={};(o.gp||[]).forEach(x=>S.gp[x.item_id]=x.notes);
   if(o.lists){S.lists=o.lists;S.shot={};o.shot.forEach(x=>S.shot[x.key]=x);if(!S.cur||!S.lists.some(x=>x.date===S.cur))S.cur=S.lists[0]&&S.lists[0].date}
 }
 function render(){
   if(!S.me)return;if(!myTabs().some(t=>t[0]===S.tab))S.tab='home';
   const nav=myTabs().map(([k,l])=>'<button role="tab" aria-selected="'+(S.tab===k)+'" data-tab="'+k+'">'+l+'</button>').join('');
-  const V={home:homeView,lists:listsView,prog:progView,meet:meetView,stats:statsView,pid:pidView,idea:ideaView,avoid:avoidView,dev:devView,why:whyView,prob:probView,ph:phView,bal:balView,acc:accView,ppl:pplView};
+  const V={home:homeView,lists:listsView,prog:progView,meet:meetView,stats:statsView,pid:pidView,gfx:gView,idea:ideaView,avoid:avoidView,dev:devView,why:whyView,prob:probView,ph:phView,bal:balView,acc:accView,ppl:pplView};
   $('#app').innerHTML='<header class="top"><div class="hrow"><img src="'+ICON+'" alt=""><h1>منصة عودة الحياة<small>'+esc(S.me.name)+' · '+esc(S.me.title||ROLES[R()])+'</small></h1><div class="clk"><span id="clk">'+clockTxt()+'</span>'+FLAG+'</div></div><nav role="tablist">'+nav+'</nav></header><main>'+V[S.tab]()+'</main>';
   if(S.tab==='acc')bindChange(false);
 }
@@ -296,6 +302,154 @@ const ACT={
   async seed(){say('#sm','جارٍ الاستيراد…');try{const j=await (await fetch('seed.json?'+Date.now())).json();
     await ok(await sb.from('config').upsert(Object.keys(j.config).map(k=>({key:k,value:j.config[k]}))));await ok(await sb.from('lists').upsert(Object.keys(j.lists).map(k=>({date:k,data:j.lists[k]}))));say('#sm','تم الاستيراد','ok');await loadAll()}catch(e){say('#sm',errAr(e),'err')}}
 };
+/* ---------- graphics (phase 3) ---------- */
+const GST={empty:'فارغ',draft:'مسودة',review:'قيد المراجعة',needs_edit:'يحتاج تعديل',approved:'معتمد',rejected:'مرفوض',published:'منشور',moved:'نُقلت للأسبوعية'};
+const GCL={review:'warn',needs_edit:'warn',approved:'ok',published:'ok'};
+const gpill=s=>'<span class="tag '+(GCL[s]||'')+'">'+GST[s]+'</span>';
+const canG=()=>['writer','owner','exec','ops'].includes(R());
+const gtabs=()=>R()==='owner'?[['review','المراجعة'],['weekly','مقترحاتي'],['ideas','أفكار الأسبوع'],['approved','المعتمد'],['tpl','القوالب والمشاريع']]:R()==='writer'?[['weekly','المقترحات الأسبوعية'],['ideas','أفكار خلال الأسبوع'],['notes','ملاحظاتي']]:[['board','المقترحات'],['approved','المعتمد']];
+const gcy=()=>S.cfg.g_cycle||null,gtpl=()=>(S.cfg.g_templates&&S.cfg.g_templates.list)||[],gprj=()=>{const p=S.cfg.g_projects||{};return{active:p.active||[],stopped:p.stopped||[]}};
+const geff=it=>{if(!it)return'empty';if(!it.v)return'draft';if(it.state==='submitted'&&it.v>(it.for_version||0))return'review';return it.status||'review'};
+const gedit=s=>['empty','draft','needs_edit'].includes(s);
+const gslot=n=>{const c=gcy();return c&&S.gi.find(x=>x.uid===S.me.id&&x.kind==='weekly'&&x.cycle===c.id&&x.slot===n)};
+const gget=id=>S.gi.find(x=>x.id===id);
+const gOpen=h=>{$('#modal').innerHTML='<div class="sheet-bg" data-act="gbg"><div class="sheet" role="dialog" aria-modal="true">'+h+'</div></div>'};
+const gClose=()=>{$('#modal').innerHTML=''};
+function gToast(m){const t=$('#toast');t.innerHTML='<span>'+esc(m)+'</span>';clearTimeout(gToast.t);gToast.t=setTimeout(()=>t.innerHTML='',3400)}
+function gView(){
+  const tb=gtabs();if(!S.gt||!tb.some(x=>x[0]===S.gt))S.gt=tb[0][0];
+  const sub='<div class="chips">'+tb.map(([k,l])=>'<button class="chip" aria-pressed="'+(S.gt===k)+'" data-act="gt" data-v="'+k+'">'+l+'</button>').join('')+'</div>';
+  const V={weekly:gWeekly,ideas:gIdeas,notes:gNotes,review:gReview,board:gBoard,approved:gApproved,tpl:gTpl};
+  return '<div class="card"><h2>مقترحات الجرافيك</h2>'+sub+'</div>'+V[S.gt]();
+}
+function gStopped(){const st=gprj().stopped;return st.length?'<div class="notice"><b>مشاريع متوقفة: لا تقترح لها جرافيك</b><br>'+st.map(esc).join('، ')+'</div>':''}
+function gWeekly(){
+  const c=gcy();if(!c)return'<div class="empty">لم تبدأ دورة بعد.'+(R()==='owner'?'<br><button class="go sm" data-act="gcycle">بدء دورة</button>':'')+'</div>';
+  let done=0,rows='';
+  for(let n=1;n<=5;n++){const it=gslot(n),st=geff(it);if(it&&it.v)done++;
+    rows+='<div class="item"><div class="top2"><span class="pn">المقترح '+n+(it&&it.project?' · '+esc(it.project):'')+(it&&it.template?' · '+esc(it.template):'')+'</span>'+gpill(st)+'</div><div class="hint">'+esc((it&&it.text||'لم تكتب شيئاً بعد').slice(0,120))+'</div>'+(it&&it.note_to_writer&&st==='needs_edit'?'<div class="notice">ملاحظة المدير: '+esc(it.note_to_writer)+'</div>':'')+'<div class="acts">'+(gedit(st)?'<button class="go sm" data-act="gedit" data-id="'+(it?it.id:'')+'" data-slot="'+n+'">'+(st==='empty'?'كتابة':'تعديل')+'</button>':'<button data-act="gview" data-id="'+it.id+'">عرض</button>')+'</div></div>'}
+  return gStopped()+'<div class="card"><div class="top2"><h2>'+esc(c.label||c.id)+'</h2><span class="hint">أرسلت '+done+' من 5 · أقصى 3 من القالب نفسه</span></div>'+pbar(done*20)+'</div>'+rows;
+}
+function gIdeas(){
+  const own=R()==='owner';
+  if(own){const l=S.gi.filter(x=>x.kind==='idea');return '<div class="hint">لا تدخل المقترحات الأسبوعية إلا إذا نقلتها بنفسك.</div>'+(l.length?l.map(gRow).join(''):'<div class="empty">لا توجد أفكار.</div>')}
+  const l=S.gi.filter(x=>x.kind==='idea'&&x.uid===S.me.id);
+  return gStopped()+'<div class="card"><div class="top2"><span class="hint">أرسل فكرة في أي وقت. لا تُحسب من الخمسة إلا إذا نقلها المدير.</span><button class="go sm" data-act="gnew">فكرة جديدة</button></div></div>'+(l.length?l.map(it=>{const st=geff(it);return '<div class="item"><div class="top2"><span class="pn">'+esc(it.template||'بلا قالب')+'</span>'+gpill(st)+'</div><div class="hint">'+esc((it.text||'').slice(0,140))+'</div>'+(it.note_to_writer&&st==='needs_edit'?'<div class="notice">ملاحظة المدير: '+esc(it.note_to_writer)+'</div>':'')+'<div class="acts">'+(gedit(st)?'<button class="go sm" data-act="gedit" data-id="'+it.id+'">تعديل</button>':'<button data-act="gview" data-id="'+it.id+'">عرض</button>')+(!it.v?'<button class="del" data-act="gdel" data-id="'+it.id+'">حذف</button>':'')+'</div></div>'}).join(''):'<div class="empty">لا أفكار بعد.</div>');
+}
+function gNotes(){
+  const rows=[];S.gi.filter(x=>x.uid===S.me.id).forEach(it=>(it.history||[]).forEach(h=>{if(h.note)rows.push({at:h.at,it,s:h.status,n:h.note})}));rows.sort((a,b)=>b.at-a.at);
+  return rows.length?rows.map(r=>'<div class="item"><div class="top2"><span class="pn">'+esc(r.it.template||'بلا قالب')+'</span>'+gpill(r.s)+'</div><div class="txt">'+esc(r.n)+'</div><span class="date">'+esc(fdt(r.at))+'</span></div>').join(''):'<div class="empty">لا توجد ملاحظات.</div>';
+}
+function gRow(it){return '<div class="item"><div class="top2"><span class="pn">'+esc(it.author||'')+' · '+esc(it.project||'')+' · '+esc(it.template||'بلا قالب')+'</span>'+gpill(geff(it))+'</div><div class="hint">'+esc((it.text||'').slice(0,140))+'</div><div class="acts"><button class="go sm" data-act="gopen" data-id="'+it.id+'">فتح</button></div></div>'}
+function gFilter(items){const f=S.gf||'all';return '<div class="chips">'+[['all','الكل'],['review','قيد المراجعة'],['needs_edit','يحتاج تعديل'],['approved','معتمد'],['published','منشور'],['rejected','مرفوض']].map(([k,l])=>'<button class="chip" aria-pressed="'+(f===k)+'" data-act="gf" data-v="'+k+'">'+l+(k==='all'?'':' ('+items.filter(x=>geff(x)===k).length+')')+'</button>').join('')+'</div>'}
+function gList(kind){const all=S.gi.filter(x=>x.v&&(kind?x.kind===kind:true));const f=S.gf||'all';const l=f==='all'?all:all.filter(x=>geff(x)===f);return gFilter(all)+(l.length?l.map(gRow).join(''):'<div class="empty">لا توجد مقترحات في هذا العرض.</div>')}
+function gReview(){const c=gcy();return '<div class="card"><div class="top2"><span class="hint">الدورة: '+esc(c?c.label:'—')+'</span><button class="ghost" data-act="gcycle">بدء دورة جديدة</button></div></div>'+gList('weekly')}
+function gBoard(){return '<div class="hint">قراءة فقط.</div>'+gList('')}
+function gApprRows(){return S.gi.filter(x=>['approved','published'].includes(x.status)&&x.v).sort((a,b)=>(a.approved_at||0)-(b.approved_at||0))}
+function gApproved(){
+  const q=(S.gq||'').trim(),f=S.gaf||'all';let rows=gApprRows();
+  if(f==='unpub')rows=rows.filter(r=>r.status!=='published');else if(f==='pub')rows=rows.filter(r=>r.status==='published');
+  if(q)rows=rows.filter(r=>[r.author,r.project,r.template,r.text,r.source].join(' ').includes(q));
+  const can=canOut();
+  const body=rows.length?rows.map((r,i)=>'<tr'+(r.status==='published'?' style="background:var(--ok-soft)"':'')+'><td>'+(i+1)+'</td><td>'+esc(r.author)+'</td><td>'+esc(r.project||'')+'</td><td>'+esc(r.template||'')+'</td><td style="min-width:220px;white-space:pre-wrap">'+esc(r.text)+'</td><td>'+esc(r.source||'')+(r.link?'<br><a href="'+esc(r.link)+'" target="_blank" rel="noopener">رابط</a>':'')+'</td><td>'+(r.image_url?'<a href="'+esc(r.image_url)+'" target="_blank" rel="noopener">صورة</a>':'—')+'</td><td>'+dkey2(r.approved_at||Date.now())+'</td><td style="text-align:center">'+(can?'<input type="checkbox" style="width:24px;height:24px;min-height:0" data-act="gpub" data-id="'+r.id+'"'+(r.status==='published'?' checked':'')+' aria-label="نُشر">':(r.status==='published'?'✓':''))+(r.status==='published'?'<br><small>'+dkey2(r.published_at||Date.now())+'</small>':'')+'</td></tr>').join(''):'<tr><td colspan="9" class="empty">لا توجد أعمال معتمدة في هذا العرض.</td></tr>';
+  return '<div class="card"><div class="top2"><span class="hint">كل المقترحات المعتمدة من جميع الكتّاب. ضع ✓ عند النشر.</span><button class="go sm" data-act="gxlsx">تنزيل Excel</button></div><div class="chips">'+[['all','الكل'],['unpub','غير منشور'],['pub','منشور']].map(([k,l])=>'<button class="chip" aria-pressed="'+(f===k)+'" data-act="gaf" data-v="'+k+'">'+l+'</button>').join('')+'</div><input id="gq" placeholder="بحث بالكاتب أو القالب أو النص" value="'+esc(q)+'"></div><div style="overflow-x:auto;border:1px solid var(--line);border-radius:10px;background:var(--surface)"><table class="gt"><thead><tr><th>#</th><th>الكاتب</th><th>المشروع</th><th>القالب</th><th>النص المعتمد</th><th>المصدر</th><th>الصورة</th><th>الاعتماد</th><th>نُشر</th></tr></thead><tbody>'+body+'</tbody></table></div>';
+}
+document.addEventListener('input',e=>{if(e.target.id==='gq'){S.gq=e.target.value;const p=e.target.selectionStart;render();const i=$('#gq');if(i){i.focus();try{i.setSelectionRange(p,p)}catch(_){}}}});
+function gTpl(){
+  const t=gtpl(),p=gprj();
+  return '<div class="card"><h2>القوالب</h2><div class="bar"><input id="gnt" placeholder="اسم قالب جديد" style="flex:1"><button class="go sm" data-act="gaddtpl">إضافة</button></div><div class="chips">'+t.map((x,i)=>'<span class="tag">'+esc(x)+' <button class="del" style="border:0;background:none" data-act="gdeltpl" data-i="'+i+'" aria-label="إزالة">✕</button></span>').join('')+'</div></div>'+
+  '<div class="card"><h2>المشاريع المتوقفة (لا جرافيك لها)</h2><textarea id="gst" style="min-height:90px">'+esc(p.stopped.join('\n'))+'</textarea><div class="bar"><button class="go sm" data-act="gsaveprj" data-k="stopped">حفظ</button></div></div>'+
+  '<div class="card"><h2>المشاريع الجارية (اقتراحات الكتابة)</h2><p class="hint">اسم في كل سطر.</p><textarea id="gac" style="min-height:160px">'+esc(p.active.join('\n'))+'</textarea><div class="bar"><button class="go sm" data-act="gsaveprj" data-k="active">حفظ</button></div></div>';
+}
+function gForm(title,it,o){
+  const opts='<option value="">اختر القالب</option>'+gtpl().map(t=>'<option'+(it&&it.template===t?' selected':'')+'>'+esc(t)+'</option>').join('');
+  return '<div class="top2"><h2>'+esc(title)+'</h2><button class="ghost" data-act="gclose">إغلاق</button></div><p class="hint">'+(o.idea?'الفكرة لا تُحسب من الخمسة.':'لا أكثر من 3 مقترحات من القالب نفسه ضمن الخمسة.')+'</p>'+
+  '<datalist id="gpl">'+gprj().active.map(p=>'<option value="'+esc(p)+'">').join('')+'</datalist>'+
+  '<label class="l" for="g_prj">المشروع</label><input id="g_prj" list="gpl" value="'+esc(it&&it.project)+'" placeholder="ابدأ بكتابة اسم المشروع"><label class="l" for="g_tpl">نوع القالب</label><select id="g_tpl">'+opts+'</select><label class="l" for="g_txt">النص أو المحتوى المقترح</label><textarea id="g_txt">'+esc(it&&it.text)+'</textarea><label class="l" for="g_img">صورة مرفقة أو مرجعية</label><input id="g_img" type="file" accept="image/*">'+(it&&it.image_url?'<img alt="" src="'+esc(it.image_url)+'" style="max-width:100%;max-height:200px;border-radius:8px;margin-top:6px">':'')+'<label class="l" for="g_src">المصدر</label><input id="g_src" value="'+esc(it&&it.source)+'"><label class="l" for="g_lnk">رابط المصدر (اختياري)</label><input id="g_lnk" type="url" dir="ltr" value="'+esc(it&&it.link)+'"><label class="l" for="g_not">ملاحظات (اختياري)</label><input id="g_not" value="'+esc(it&&it.notes)+'"><div class="bar" style="margin-top:14px"><button class="ghost" data-act="gsave" data-id="'+(it?it.id:'')+'" data-idea="'+(o.idea?1:'')+'" data-slot="'+(o.slot||'')+'">حفظ كمسودة</button><button class="go" data-act="gsend" data-id="'+(it?it.id:'')+'" data-idea="'+(o.idea?1:'')+'" data-slot="'+(o.slot||'')+'">إرسال</button><span class="msg" id="gm"></span></div>';
+}
+function gDetail(it,owner){
+  const st=geff(it);
+  const vers=(it.versions||[]).slice().reverse().map(v=>'<div class="item"><b>النسخة '+v.v+'</b> · '+esc(fdt(v.at))+'<div class="hint">'+esc(v.template||'')+' · '+esc((v.text||'').slice(0,200))+'</div></div>').join('');
+  let h='<div class="top2"><h2>'+esc(it.author||'')+' · '+esc(it.template||'بلا قالب')+'</h2><button class="ghost" data-act="gclose">إغلاق</button></div><p>'+gpill(st)+'</p><div class="item"><div><b>المشروع:</b> '+esc(it.project||'—')+'</div><div class="txt">'+esc(it.text)+'</div><div><b>المصدر:</b> '+esc(it.source||'—')+'</div>'+(it.link?'<a href="'+esc(it.link)+'" target="_blank" rel="noopener" dir="ltr">'+esc(it.link)+'</a>':'')+(it.notes?'<div><b>ملاحظات:</b> '+esc(it.notes)+'</div>':'')+(it.image_url?'<img alt="" src="'+esc(it.image_url)+'" style="max-width:100%;max-height:260px;border-radius:8px">':'')+'</div>';
+  if(it.note_to_writer)h+='<div class="notice">ملاحظة المدير: '+esc(it.note_to_writer)+'</div>';
+  if(vers)h+='<h2 style="margin-top:12px">سجل النسخ</h2>'+vers;
+  if(owner){
+    const pn=(S.gp[it.id]||[]).map(n=>'<div class="hint">'+esc(fdt(n.at))+' · '+esc(n.text)+'</div>').join('');
+    const D=s=>'data-act="gdecide" data-id="'+it.id+'" data-s="'+s+'"';
+    h+='<div class="card" style="margin-top:12px"><h2>قرارك</h2>'+(it.v?'':'<p class="hint">المسودة لم تُرسل بعد.</p>')+'<label class="l" for="gnw">ملاحظة للكاتب</label><textarea id="gnw" style="min-height:70px"></textarea><label class="l" for="gni">ملاحظة داخلية (لا يراها الكاتب)</label><textarea id="gni" style="min-height:60px"></textarea>'+pn+'<div class="chips" style="margin-top:10px"><button class="go g" '+D('approved')+'>اعتماد</button><button class="go" style="background:var(--o)" '+D('needs_edit')+'>طلب تعديل</button><button class="ghost del" '+D('rejected')+'>رفض</button>'+(it.kind==='idea'&&st!=='moved'?'<button class="ghost" data-act="gtoweekly" data-id="'+it.id+'">نقل إلى الأسبوعية</button>':'')+'</div></div>';
+  }
+  return h;
+}
+const gread=old=>({project:val('#g_prj').trim(),template:val('#g_tpl'),text:val('#g_txt').trim(),source:val('#g_src').trim(),link:val('#g_lnk').trim(),notes:val('#g_not').trim()});
+async function gSaveItem(d,send){
+  const idea=!!d.idea,old=d.id?gget(d.id):null,c=gcy(),f=gread();
+  if(!idea&&!c)return say('#gm','لا توجد دورة مفتوحة','err');
+  if(send&&(!f.project||!f.template||!f.text||!f.source))return say('#gm','المشروع والقالب والنص والمصدر مطلوبة للإرسال','err');
+  if(f.link&&!/^https?:\/\//.test(f.link))return say('#gm','الرابط يجب أن يبدأ بـ https://','err');
+  if(f.project&&gprj().stopped.includes(f.project))return say('#gm','هذا المشروع متوقف، لا جرافيك له','err');
+  if(!idea&&f.template){const n=S.gi.filter(x=>x.uid===S.me.id&&x.kind==='weekly'&&x.cycle===c.id&&x.template===f.template&&(!old||x.id!==old.id)).length;if(n>=3)return say('#gm','لديك 3 مقترحات من هذا القالب بالفعل','err')}
+  try{
+    say('#gm','جارٍ الحفظ…');
+    let img=old&&old.image_url||null;const fl=$('#g_img').files[0];if(fl)img=(await upload(fl)).url;
+    const now=Date.now(),v=send?((old&&old.v||0)+1):(old&&old.v||0),vers=(old&&old.versions||[]).slice();
+    if(send)vers.push({v,at:now,project:f.project,template:f.template,text:f.text,source:f.source,link:f.link,notes:f.notes});
+    const row={...f,image_url:img,state:send?'submitted':'draft',v,versions:vers,submitted_at:send?now:(old&&old.submitted_at||null)};
+    if(old)await ok(await sb.from('gitems').update(row).eq('id',old.id));
+    else await ok(await sb.from('gitems').insert({...row,uid:S.me.id,author:S.me.name,kind:idea?'idea':'weekly',cycle:idea?null:c.id,slot:idea?null:+d.slot}));
+    gClose();await refresh();gToast(send?'أُرسل للمراجعة':'حُفظت المسودة');
+  }catch(e){say('#gm',errAr(e),'err')}
+}
+async function gXlsx(){
+  try{
+    if(!window.ExcelJS)await new Promise((ok2,no)=>{const s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js';s.onload=ok2;s.onerror=no;document.head.appendChild(s)});
+    const wb=new ExcelJS.Workbook(),ws=wb.addWorksheet('المعتمد',{views:[{rightToLeft:true,state:'frozen',ySplit:1}]});
+    ws.columns=[['الكاتب',16],['المشروع',26],['نوع القالب',16],['النص المعتمد',60],['المصدر',24],['رابط المصدر',30],['رابط الصورة',30],['تاريخ التقديم',14],['تاريخ الاعتماد',14],['حالة النشر',12],['تاريخ النشر',14],['ملاحظات',24]].map(([header,width])=>({header,width}));
+    ws.getRow(1).eachCell(c=>{c.font={bold:true,color:{argb:'FFFFFFFF'}};c.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FF11809A'}};c.alignment={horizontal:'center'}});
+    gApprRows().forEach(r=>{const row=ws.addRow([r.author,r.project||'',r.template||'',r.text,r.source||'',r.link||'',r.image_url||'',r.submitted_at?dkey2(r.submitted_at):'',r.approved_at?dkey2(r.approved_at):'',r.status==='published'?'منشور':'غير منشور',r.published_at?dkey2(r.published_at):'',r.notes||'']);row.alignment={vertical:'top',wrapText:true,horizontal:'right'};if(r.status==='published')row.eachCell(c=>{c.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FFD2F0D2'}}})});
+    const buf=await wb.xlsx.writeBuffer();const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([buf],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}));a.download='المقترحات المعتمدة - جرافيك عودة الحياة.xlsx';document.body.appendChild(a);a.click();a.remove();
+  }catch(e){alert('تعذر إنشاء الملف')}
+}
+const gcfg=async(k,v)=>{await ok(await sb.from('config').upsert({key:k,value:v}));await refresh()};
+Object.assign(ACT,{
+  gt(d){S.gt=d.v;S.gf='all';render()},gf(d){S.gf=d.v;render()},gaf(d){S.gaf=d.v;render()},
+  gbg(d,t,e){if(e.target===t)gClose()},gclose(){gClose()},
+  gnew(){if(!gtpl().length)return gToast('لا توجد قوالب بعد');gOpen(gForm('فكرة جديدة',null,{idea:true}))},
+  gedit(d){const it=d.id?gget(d.id):null;gOpen(gForm(it&&it.kind==='idea'?'تعديل الفكرة':'المقترح '+(d.slot||(it&&it.slot)),it,{idea:!!(it&&it.kind==='idea'),slot:d.slot||(it&&it.slot)}))},
+  gview(d){gOpen(gDetail(gget(d.id),false))},gopen(d){gOpen(gDetail(gget(d.id),R()==='owner'))},
+  gsave(d){return gSaveItem(d,false)},gsend(d){return gSaveItem(d,true)},
+  async gdel(d){if(!confirm('حذف المسودة؟'))return;try{await ok(await sb.from('gitems').delete().eq('id',d.id));await refresh()}catch(e){alert(errAr(e))}},
+  async gcycle(){const dt=lt(Date.now());const id='w'+dkey(0).replace(/-/g,'');if(!confirm('بدء دورة جديدة؟ سيبدأ الكتّاب بخمس خانات فارغة.'))return;await gcfg('g_cycle',{id,label:'دورة '+pad(dt.getUTCDate())+'/'+pad(dt.getUTCMonth()+1)+'/'+dt.getUTCFullYear()})},
+  async gaddtpl(){const v=val('#gnt').trim();if(!v)return;if(gtpl().includes(v))return alert('القالب موجود');await gcfg('g_templates',{list:gtpl().concat([v])})},
+  async gdeltpl(d){const l=gtpl().slice();l.splice(+d.i,1);await gcfg('g_templates',{list:l})},
+  async gsaveprj(d){const p=gprj(),l=val(d.k==='stopped'?'#gst':'#gac').split('\n').map(s=>s.trim()).filter(Boolean);p[d.k]=[...new Set(l)];await gcfg('g_projects',p)},
+  async gdecide(d){
+    const it=gget(d.id);if(!it||!it.v)return alert('لم يُرسل المقترح بعد');
+    const note=val('#gnw').trim(),internal=val('#gni').trim(),s=d.s;
+    if(s==='needs_edit'&&!note)return alert('اكتب ملاحظة التعديل للكاتب');
+    const now=Date.now(),hist=(it.history||[]).concat([{at:now,status:s,v:it.v,note}]);
+    try{
+      await ok(await sb.from('gitems').update({status:s,for_version:it.v,note_to_writer:note||null,decided_at:now,history:hist,approved_at:s==='approved'?(it.approved_at||now):null,published_at:null,published_by:null}).eq('id',it.id));
+      if(internal)await ok(await sb.from('gpriv').upsert({item_id:it.id,notes:(S.gp[it.id]||[]).concat([{at:now,text:internal}])}));
+      gClose();await refresh();gToast(s==='approved'?'اعتُمد':s==='rejected'?'رُفض':'أُرسل طلب التعديل');
+    }catch(e){alert(errAr(e))}
+  },
+  async gtoweekly(d){
+    const it=gget(d.id),c=gcy();if(!c)return alert('ابدأ دورة أولاً');
+    const mine=S.gi.filter(x=>x.uid===it.uid&&x.kind==='weekly'&&x.cycle===c.id);
+    if(mine.filter(x=>x.template===it.template).length>=3)return alert('لدى الكاتب 3 مقترحات من هذا القالب');
+    let slot=0;for(let n=1;n<=5;n++){const e=mine.find(x=>x.slot===n);if(!e||!e.v){slot=n;break}}
+    if(!slot)return alert('لدى الكاتب خمسة مقترحات مكتملة');
+    const now=Date.now(),ex=mine.find(x=>x.slot===slot);
+    try{
+      const row={project:it.project,template:it.template,text:it.text,source:it.source,link:it.link,notes:it.notes,image_url:it.image_url,state:'submitted',v:1,versions:[{v:1,at:now,template:it.template,text:it.text,source:it.source}],submitted_at:now,from_idea:it.id};
+      if(ex)await ok(await sb.from('gitems').update(row).eq('id',ex.id));else await ok(await sb.from('gitems').insert({...row,uid:it.uid,author:it.author,kind:'weekly',cycle:c.id,slot}));
+      await ok(await sb.from('gitems').update({status:'moved',for_version:it.v,decided_at:now}).eq('id',it.id));
+      gClose();await refresh();gToast('نُقلت إلى المقترح '+slot);
+    }catch(e){alert(errAr(e))}
+  },
+  async gpub(d,t){try{await ok(await sb.rpc('g_publish',{p_id:d.id,p_pub:t.checked}));await refresh()}catch(e){alert(errAr(e));await refresh()}},
+  gxlsx(){return gXlsx()}
+});
 document.addEventListener('click',e=>{const t=e.target.closest('[data-tab],[data-act]');if(!t)return;if(t.dataset.tab){S.tab=t.dataset.tab;render();return}const f=ACT[t.dataset.act];if(f){if(t.tagName==='A')e.preventDefault();f(t.dataset,t,e)}});
 boot();
 </script></body></html>

@@ -53,7 +53,7 @@ const fdt=t=>{const d=lt(t);return pad(d.getUTCDate())+'/'+pad(d.getUTCMonth()+1
 const clockTxt=()=>{const d=lt(Date.now());return ftime(Date.now())+' · '+d.getUTCDate()+' '+AR[d.getUTCMonth()]};
 setInterval(()=>{const e=$('#clk');if(e)e.textContent=clockTxt()},15000);
 const S={gi:[],gp:{},gt:null,gf:'all',gaf:'all',gq:'',me:null,tab:'home',lists:[],cur:null,shot:{},people:[],cfg:{},meetings:[],notes:[],occ:[],swaps:[],devices:[],phones:[],reports:[],pub:[],ideas:[],open:{},pt:'prog',pg:'تعال نقولك 2026',pgi:0,F:{},msg:''};
-const LINKS=[{t:'الجرافيك القديم (أرشيف)',d:'البيانات السابقة قبل الانتقال للموقع',u:'https://claude.ai/artifact/KZcS5wtJSYsW3D2omLcCKZ',r:['owner']},{t:'متابعة المشاريع',d:'تحديثات المشاريع',u:'https://claude.ai/artifact/17zHwKbK3Fk5dgbFmgw2sY',r:['follower','helper','filming','exec','ops','writer','owner']}];
+const LINKS=[{t:'الجرافيك القديم (أرشيف)',d:'البيانات السابقة قبل الانتقال للموقع',u:'https://claude.ai/artifact/KZcS5wtJSYsW3D2omLcCKZ',r:['owner']}];
 const mail=u=>String(u).trim().toLowerCase()+'@3awda.app';
 const say=(id,t,c)=>{const m=$(id);if(m){m.textContent=t;m.className='msg '+(c||'')}};
 const errAr=e=>{const m=(e&&e.message)||'';if(/Invalid login/i.test(m))return 'اسم المستخدم أو الرمز غير صحيح';if(/banned/i.test(m))return 'الحساب موقوف';if(/same password/i.test(m))return 'اختر رمزاً مختلفاً عن الحالي';if(/row-level security/i.test(m))return 'غير مسموح لك بهذا الإجراء';return m||'حدث خطأ'};
@@ -91,23 +91,24 @@ function bindChange(force){
   b.onclick=async()=>{const a=$('#n1').value,c=$('#n2').value;if(a.length<6)return say('#cm','الرمز أقل من 6 خانات','err');if(a!==c)return say('#cm','الرمزان غير متطابقين','err');
     const {error}=await sb.auth.updateUser({password:a});if(error)return say('#cm',errAr(error),'err');await sb.rpc('password_changed');S.me.must_change=false;say('#cm','تم حفظ الرمز','ok');if(force){await loadAll();render()}};
 }
-const myTabs=()=>{const t=[['home','الرئيسية']];if(SHOOTR())t.push(['lists','قوائم التصوير']);t.push(['prog','برامج المنصة'],['meet','الاجتماعات'],['stats','الإحصائيات']);if(canIdea())t.push(['pid','أفكار البرامج وReel']);if(canG())t.push(['gfx','مقترحات الجرافيك']);t.push(['idea','أفكار ونشر'],['avoid','نبتعد عن تكراره'],['dev','صفحات الأجهزة'],['why','لماذا أُنشئ الموقع'],['prob','مشاكل العمل بالطريقة السابقة'],['ph','دفتر أرقامي'],['bal','ملاحظة أو بلاغ'],['acc','حسابي']);if(R()==='owner')t.push(['ppl','الأشخاص']);return t};
+const myTabs=()=>{const t=[['home','الرئيسية']];if(SHOOTR())t.push(['lists','قوائم التصوير']);t.push(['upd','تحديث المشاريع'],['prog','برامج المنصة'],['meet','الاجتماعات'],['stats','الإحصائيات']);if(canIdea())t.push(['pid','أفكار البرامج وReel']);if(canG())t.push(['gfx','مقترحات الجرافيك']);t.push(['idea','أفكار ونشر'],['avoid','نبتعد عن تكراره'],['dev','صفحات الأجهزة'],['why','لماذا أُنشئ الموقع'],['prob','مشاكل العمل بالطريقة السابقة'],['ph','دفتر أرقامي'],['bal','ملاحظة أو بلاغ'],['acc','حسابي']);if(R()==='owner')t.push(['ppl','الأشخاص']);return t};
 async function loadAll(){
   const q=async p=>{try{const r=await p;return r.error?[]:(r.data||[])}catch(e){return[]}};
-  const J={cfg:sb.from('config').select('*'),meetings:sb.from('meetings').select('*').order('at'),notes:sb.from('meeting_notes').select('*'),occ:sb.from('occasions').select('*'),swaps:sb.from('swaps').select('*'),devices:sb.from('devices').select('*').order('ts'),phones:sb.from('phones').select('*').order('name'),reports:sb.from('reports').select('*').order('ts',{ascending:false}),pub:sb.from('pub_ideas').select('*').order('ts',{ascending:false}).limit(300),ideas:sb.from('ideas').select('*').order('ts',{ascending:false}),people:sb.from('profiles').select('*').order('created_at')};
+  const J={cfg:sb.from('config').select('*'),meetings:sb.from('meetings').select('*').order('at'),notes:sb.from('meeting_notes').select('*'),occ:sb.from('occasions').select('*'),swaps:sb.from('swaps').select('*'),devices:sb.from('devices').select('*').order('ts'),phones:sb.from('phones').select('*').order('name'),reports:sb.from('reports').select('*').order('ts',{ascending:false}),pub:sb.from('pub_ideas').select('*').order('ts',{ascending:false}).limit(300),pu:sb.from('pupdates').select('*').order('ts',{ascending:false}).limit(300),ideas:sb.from('ideas').select('*').order('ts',{ascending:false}),people:sb.from('profiles').select('*').order('created_at')};
   if(canG()){J.gi=sb.from('gitems').select('*').order('updated_at',{ascending:false}).limit(3000);if(R()==='owner')J.gp=sb.from('gpriv').select('*')}
   if(SHOOTR()){J.lists=sb.from('lists').select('*').order('date',{ascending:false});J.shot=sb.from('shot').select('*')}
   const ks=Object.keys(J);const rs=await Promise.all(ks.map(k=>q(J[k])));const o={};ks.forEach((k,i)=>o[k]=rs[i]);
   S.cfg={};o.cfg.forEach(x=>S.cfg[x.key]=x.value);['meetings','notes','occ','swaps','devices','phones','reports','pub','ideas','people'].forEach(k=>S[k]=o[k]);
-  S.gi=o.gi||[];S.gp={};(o.gp||[]).forEach(x=>S.gp[x.item_id]=x.notes);
+  S.pu=o.pu||[];S.gi=o.gi||[];S.gp={};(o.gp||[]).forEach(x=>S.gp[x.item_id]=x.notes);
   if(o.lists){S.lists=o.lists;S.shot={};o.shot.forEach(x=>S.shot[x.key]=x);if(!S.cur||!S.lists.some(x=>x.date===S.cur))S.cur=S.lists[0]&&S.lists[0].date}
 }
 function render(){
   if(!S.me)return;if(!myTabs().some(t=>t[0]===S.tab))S.tab='home';
   const nav=myTabs().map(([k,l])=>'<button role="tab" aria-selected="'+(S.tab===k)+'" data-tab="'+k+'">'+l+'</button>').join('');
-  const V={home:homeView,lists:listsView,prog:progView,meet:meetView,stats:statsView,pid:pidView,gfx:gView,idea:ideaView,avoid:avoidView,dev:devView,why:whyView,prob:probView,ph:phView,bal:balView,acc:accView,ppl:pplView};
+  const V={home:homeView,lists:listsView,prog:progView,meet:meetView,stats:statsView,upd:updView,pid:pidView,gfx:gView,idea:ideaView,avoid:avoidView,dev:devView,why:whyView,prob:probView,ph:phView,bal:balView,acc:accView,ppl:pplView};
   $('#app').innerHTML='<header class="top"><div class="hrow"><img src="'+ICON+'" alt=""><h1>منصة عودة الحياة<small>'+esc(S.me.name)+' · '+esc(S.me.title||ROLES[R()])+'</small></h1><div class="clk"><span id="clk">'+clockTxt()+'</span>'+FLAG+'</div></div><nav role="tablist">'+nav+'</nav></header><main>'+V[S.tab]()+'</main>';
   if(S.tab==='acc')bindChange(false);
+  if(S.tab==='upd')uWire();
 }
 const refresh=async()=>{await loadAll();render()};
 setInterval(()=>{if(S.me&&!/INPUT|TEXTAREA|SELECT/.test((document.activeElement||{}).tagName||''))refresh()},60000);
@@ -351,7 +352,7 @@ function gApproved(){
   if(f==='unpub')rows=rows.filter(r=>r.status!=='published');else if(f==='pub')rows=rows.filter(r=>r.status==='published');
   if(q)rows=rows.filter(r=>[r.author,r.project,r.template,r.text,r.source].join(' ').includes(q));
   const can=canOut();
-  const body=rows.length?rows.map((r,i)=>'<tr'+(r.status==='published'?' style="background:var(--ok-soft)"':'')+'><td>'+(i+1)+'</td><td>'+esc(r.author)+'</td><td>'+esc(r.project||'')+'</td><td>'+esc(r.template||'')+'</td><td style="min-width:220px;white-space:pre-wrap">'+esc(r.text)+'</td><td>'+esc(r.source||'')+(r.link?'<br><a href="'+esc(r.link)+'" target="_blank" rel="noopener">رابط</a>':'')+'</td><td>'+(r.image_url?'<a href="'+esc(r.image_url)+'" target="_blank" rel="noopener">صورة</a>':'—')+'</td><td>'+dkey2(r.approved_at||Date.now())+'</td><td style="text-align:center">'+(can?'<input type="checkbox" style="width:24px;height:24px;min-height:0" data-act="gpub" data-id="'+r.id+'"'+(r.status==='published'?' checked':'')+' aria-label="نُشر">':(r.status==='published'?'✓':''))+(r.status==='published'?'<br><small>'+dkey2(r.published_at||Date.now())+'</small>':'')+'</td></tr>').join(''):'<tr><td colspan="9" class="empty">لا توجد أعمال معتمدة في هذا العرض.</td></tr>';
+  const body=rows.length?rows.map((r,i)=>'<tr'+(r.status==='published'?' style="background:var(--ok-soft)"':'')+'><td>'+(i+1)+'</td><td>'+esc(r.author)+'</td><td>'+esc(r.project||'')+(newsFor(r.project)?' <span class="tag ok">خبر جديد</span>':'')+'</td><td>'+esc(r.template||'')+'</td><td style="min-width:220px;white-space:pre-wrap">'+esc(r.text)+'</td><td>'+esc(r.source||'')+(r.link?'<br><a href="'+esc(r.link)+'" target="_blank" rel="noopener">رابط</a>':'')+'</td><td>'+(r.image_url?'<a href="'+esc(r.image_url)+'" target="_blank" rel="noopener">صورة</a>':'—')+'</td><td>'+dkey2(r.approved_at||Date.now())+'</td><td style="text-align:center">'+(can?'<input type="checkbox" style="width:24px;height:24px;min-height:0" data-act="gpub" data-id="'+r.id+'"'+(r.status==='published'?' checked':'')+' aria-label="نُشر">':(r.status==='published'?'✓':''))+(r.status==='published'?'<br><small>'+dkey2(r.published_at||Date.now())+'</small>':'')+'</td></tr>').join(''):'<tr><td colspan="9" class="empty">لا توجد أعمال معتمدة في هذا العرض.</td></tr>';
   return '<div class="card"><div class="top2"><span class="hint">كل المقترحات المعتمدة من جميع الكتّاب. ضع ✓ عند النشر.</span><button class="go sm" data-act="gxlsx">تنزيل Excel</button></div><div class="chips">'+[['all','الكل'],['unpub','غير منشور'],['pub','منشور']].map(([k,l])=>'<button class="chip" aria-pressed="'+(f===k)+'" data-act="gaf" data-v="'+k+'">'+l+'</button>').join('')+'</div><input id="gq" placeholder="بحث بالكاتب أو القالب أو النص" value="'+esc(q)+'"></div><div style="overflow-x:auto;border:1px solid var(--line);border-radius:10px;background:var(--surface)"><table class="gt"><thead><tr><th>#</th><th>الكاتب</th><th>المشروع</th><th>القالب</th><th>النص المعتمد</th><th>المصدر</th><th>الصورة</th><th>الاعتماد</th><th>نُشر</th></tr></thead><tbody>'+body+'</tbody></table></div>';
 }
 document.addEventListener('input',e=>{if(e.target.id==='gq'){S.gq=e.target.value;const p=e.target.selectionStart;render();const i=$('#gq');if(i){i.focus();try{i.setSelectionRange(p,p)}catch(_){}}}});
@@ -450,6 +451,61 @@ Object.assign(ACT,{
   async gpub(d,t){try{await ok(await sb.rpc('g_publish',{p_id:d.id,p_pub:t.checked}));await refresh()}catch(e){alert(errAr(e));await refresh()}},
   gxlsx(){return gXlsx()}
 });
+/* ---------- project updates (phase 4) ---------- */
+const USTAT=[['توقف العمل','stop'],['عاد للعمل',''],['وتيرة متسارعة',''],['اكتمل البناء','soon'],['افتتاح قريب','soon'],['تم الافتتاح',''],['شيء مهم في الموقع','']];
+const UNOTES={'توقف العمل':['لا آليات في الموقع','لا عمال في الموقع','نقص مواد','التمويل أو الدفعات','الطقس','لا أعرف السبب'],'عاد للعمل':['عادت الآليات','عاد العمال','استؤنف بعد توقف','عاد جزئياً'],'وتيرة متسارعة':['رصف','صب خرسانة','صب البلاط','بنية تحتية','أعمال حفر','أعمال إنارة','عدة آليات تعمل','عمل ليلي'],'اكتمل البناء':['تشطيبات بسيطة','بانتظار الافتتاح','بانتظار التجهيز'],'افتتاح قريب':['موعد معلن','زيارة مسؤول متوقعة','استعدادات في الموقع'],'تم الافتتاح':['افتتاح رسمي','فتح للجمهور'],'شيء مهم في الموقع':['مرحلة مهمة','زيارة مسؤول','شيء جديد ظهر','تغيّر ظاهر على المشروع']};
+const USRC=['مهندس المشروع','مسؤول في الجهة','المقاول','زيارة بنفسي','مصدر آخر'];
+const SOON=['اكتمل البناء','افتتاح قريب'];
+S.U={sel:null,status:null,notes:[],src:null,editing:null,filter:'all',note:'',date:''};S.pu=[];
+const normA=s=>String(s).replace(/[ً-ْـ]/g,'').replace(/[أإآ]/g,'ا').replace(/ة/g,'ه').replace(/ى/g,'ي').toLowerCase();
+const uchips=(items,sel,key)=>items.map(x=>{const t=Array.isArray(x)?x[0]:x,c=Array.isArray(x)?x[1]:'';return '<button type="button" class="chip" aria-pressed="'+sel(t)+'" data-act="'+key+'" data-v="'+esc(t)+'"'+(c==='stop'&&sel(t)?' style="background:var(--bad);border-color:var(--bad)"':c==='soon'&&sel(t)?' style="background:var(--o);border-color:var(--o)"':'')+'>'+esc(t)+'</button>'}).join('');
+function uCap(){const U=S.U;U.note=($('#ux')||{}).value??U.note;U.date=($('#ud')||{}).value||U.date}
+function updView(){
+  const U=S.U,ed=U.editing?S.pu.find(x=>x.id===U.editing):null,tdy=dkey(0);
+  const form='<section class="card"><h2>'+(ed?'تعديل تحديث':'تحديث جديد')+'</h2><div style="position:relative"><label class="l" for="uq">المشروع</label><input id="uq" autocomplete="off" placeholder="اكتب حرفاً أو أكثر" value="'+esc(U.sel||'')+'"><div id="ulb" hidden style="position:absolute;inset-inline:0;top:100%;margin-top:4px;background:var(--surface);border:1px solid var(--line);border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.16);z-index:5;max-height:300px;overflow:auto"></div><p class="hint">'+(U.sel?'المشروع المختار: '+esc(U.sel):'لم تختر مشروعاً بعد.')+'</p></div>'+
+  '<div><span class="l">ماذا حدث؟</span><div class="chips">'+uchips(USTAT,t=>U.status===t,'ust')+'</div></div>'+
+  '<div><span class="l">تفاصيل <span class="hint">(اختر ما ينطبق)</span></span><div class="chips">'+(U.status?uchips(UNOTES[U.status],t=>U.notes.includes(t),'unt'):'<span class="hint">اختر ما حدث أولاً.</span>')+'</div></div>'+
+  '<div><span class="l">المصدر</span><div class="chips">'+uchips(USRC,t=>U.src===t,'usrc')+'</div></div>'+
+  '<div class="row2"><div><label class="l" for="ud">التاريخ</label><input type="date" id="ud" value="'+esc(U.date||(ed?ed.date:tdy))+'"></div><div><label class="l" for="ufl">صورة أو فيديو <span class="hint">(اختياري)</span></label><input type="file" id="ufl" accept="image/*,video/*"></div></div>'+
+  '<div><label class="l" for="ux">ملاحظة <span class="hint">(اختياري)</span></label><input id="ux" autocomplete="off" value="'+esc(U.note||(ed&&ed.extra)||'')+'"></div>'+
+  '<div class="bar"><button class="go" id="uadd" data-act="uadd"'+(U.sel&&U.status?'':' disabled')+'>'+(ed?'حفظ التعديل':'إضافة التحديث')+'</button>'+(ed?'<button class="ghost" data-act="ucancel">إلغاء</button>':'')+'<span class="msg" id="um" role="status"></span></div></section>';
+  const f=U.filter,l=S.pu.filter(u=>f==='all'||(f==='soon'&&SOON.includes(u.status))||(f==='stop'&&u.status==='توقف العمل'));
+  return form+'<div class="top2"><h2>آخر التحديثات</h2><span class="hint">يراها كل المفعّلين</span></div><div class="chips">'+[['all','الكل'],['soon','اكتمال وافتتاح'],['stop','توقف']].map(([k,t])=>'<button class="chip" aria-pressed="'+(f===k)+'" data-act="uflt" data-v="'+k+'">'+t+'</button>').join('')+'</div><div class="feed">'+(l.length?l.map(uItem).join(''):'<div class="empty">لا تحديثات.</div>')+'</div>';
+}
+function uItem(d){
+  const mine=d.by_id===S.me.id||R()==='owner';
+  const tags=['<span class="tag '+(d.status==='توقف العمل'?'warn':(['اكتمل البناء','افتتاح قريب','تم الافتتاح'].includes(d.status)?'ok':''))+'">'+esc(d.status)+'</span>'].concat((d.notes||[]).map(n=>'<span class="tag">'+esc(n)+'</span>'));
+  if(d.source)tags.push('<span class="tag">المصدر: '+esc(d.source)+'</span>');
+  const m=d.media&&d.media.url?((d.media.type||'').startsWith('video')?'<a href="'+esc(d.media.url)+'" target="_blank" rel="noopener">عرض الفيديو</a>':'<img alt="" src="'+esc(d.media.url)+'" style="max-width:100%;max-height:240px;border-radius:8px;border:1px solid var(--line)">'):'';
+  return '<div class="item"><div class="top2"><span class="pn">'+esc(d.project)+'</span><span class="date">'+esc(d.date)+'</span></div><div class="chips">'+tags.join('')+'</div>'+(d.extra?'<div class="txt">'+esc(d.extra)+'</div>':'')+m+'<div class="top2"><span class="pn" style="color:var(--brand)">'+esc(d.by_name||nm(d.by_id)||'')+'</span><span class="date">'+esc(fdt(d.ts))+'</span></div>'+(mine?'<div class="acts"><button data-act="uedit" data-id="'+d.id+'">تعديل</button><button class="del" data-act="udel" data-id="'+d.id+'">حذف</button></div>':'')+'</div>';
+}
+function uWire(){
+  const inp=$('#uq');if(!inp)return;const box=$('#ulb'),reg=S.cfg.registry||[];
+  inp.oninput=()=>{S.U.sel=null;const b=$('#uadd');if(b)b.disabled=true;const q=normA(inp.value.trim());if(!q){box.hidden=true;return}
+    const sc=p=>{const n=normA(p.n);if(n.startsWith(q))return 0;if(n.split(/[\s\-\/()]+/).some(w=>w.startsWith(q)))return 1;if(n.includes(q))return 2;return 9};
+    const res=reg.map(p=>[sc(p),p]).filter(x=>x[0]<9).sort((a,b)=>a[0]-b[0]).slice(0,8).map(x=>x[1]);
+    box.innerHTML=res.length?'':'<div style="padding:10px 12px">لا نتيجة</div>';
+    res.forEach(p=>{const o=document.createElement('div');o.style.cssText='display:flex;justify-content:space-between;gap:10px;padding:10px 12px;cursor:pointer;min-height:44px;align-items:center;border-bottom:1px solid var(--line)';o.innerHTML='<span></span><small style="color:var(--muted)"></small>';o.firstChild.textContent=p.n;o.lastChild.textContent=p.s;o.onmousedown=e=>{e.preventDefault();uCap();S.U.sel=p.n;render()};box.appendChild(o)});box.hidden=false};
+  inp.onblur=()=>setTimeout(()=>{box.hidden=true},150);
+}
+Object.assign(ACT,{
+  ust(d){uCap();S.U.status=d.v;S.U.notes=[];render()},
+  unt(d){uCap();const n=S.U.notes,i=n.indexOf(d.v);i<0?n.push(d.v):n.splice(i,1);render()},
+  usrc(d){uCap();S.U.src=d.v;render()},uflt(d){uCap();S.U.filter=d.v;render()},
+  ucancel(){S.U={...S.U,sel:null,status:null,notes:[],src:null,editing:null,note:'',date:''};render()},
+  uedit(d){const u=S.pu.find(x=>x.id===d.id);if(!u)return;S.U={...S.U,sel:u.project,status:u.status,notes:(u.notes||[]).slice(),src:u.source||null,editing:u.id,note:u.extra||'',date:u.date};render();window.scrollTo({top:0,behavior:'smooth'})},
+  async udel(d){if(!confirm('حذف التحديث؟'))return;try{await ok(await sb.from('pupdates').delete().eq('id',d.id));await refresh()}catch(e){alert(errAr(e))}},
+  async uadd(){
+    uCap();const U=S.U,b=$('#uadd');b.disabled=true;
+    try{
+      const row={date:U.date||dkey(0),project:U.sel,status:U.status,notes:U.notes,source:U.src||null,extra:(U.note||'').trim()||null};
+      const f=$('#ufl').files[0];if(f){const u=await upload(f);row.media={url:u.url,type:u.type}}
+      if(U.editing)await ok(await sb.from('pupdates').update(row).eq('id',U.editing));else await ok(await sb.from('pupdates').insert({...row,by_name:S.me.name}));
+      S.U={...U,sel:null,status:null,notes:[],src:null,editing:null,note:'',date:''};await refresh();say('#um','تمت الإضافة. يراها الجميع.','ok')
+    }catch(e){say('#um',errAr(e),'err');b.disabled=false}
+  }
+});
+const newsFor=p=>S.pu.some(u=>u.project===p&&SOON.includes(u.status)&&Date.now()-u.ts<14*86400e3);
 document.addEventListener('click',e=>{const t=e.target.closest('[data-tab],[data-act]');if(!t)return;if(t.dataset.tab){S.tab=t.dataset.tab;render();return}const f=ACT[t.dataset.act];if(f){if(t.tagName==='A')e.preventDefault();f(t.dataset,t,e)}});
 boot();
 </script></body></html>

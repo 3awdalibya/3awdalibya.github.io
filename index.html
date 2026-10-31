@@ -48,10 +48,19 @@ const ftime=t=>{const d=lt(t),h=d.getUTCHours();return (h%12||12)+':'+pad(d.getU
 const fdt=t=>{const d=lt(t);return pad(d.getUTCDate())+'/'+pad(d.getUTCMonth()+1)+' '+pad(d.getUTCHours())+':'+pad(d.getUTCMinutes())};
 const clockTxt=()=>{const d=lt(Date.now());return ftime(Date.now())+' · '+d.getUTCDate()+' '+AR[d.getUTCMonth()]};
 setInterval(()=>{const e=$('#clk');if(e)e.textContent=clockTxt()},15000);
-const S={me:null,tab:'home',lists:[],cur:null,shot:{},people:[],msg:''};
+const S={me:null,tab:'home',lists:[],cur:null,shot:{},people:[],cfg:{},meetings:[],notes:[],occ:[],swaps:[],devices:[],phones:[],reports:[],pub:[],ideas:[],open:{},pt:'prog',pg:'تعال نقولك 2026',pgi:0,F:{},msg:''};
+const LINKS=[{t:'مقترحات الجرافيك',d:'الكتابة والمراجعة والمعتمد',u:'https://claude.ai/artifact/KZcS5wtJSYsW3D2omLcCKZ',r:['writer','ops','exec','owner']},{t:'متابعة المشاريع',d:'تحديثات المشاريع',u:'https://claude.ai/artifact/17zHwKbK3Fk5dgbFmgw2sY',r:['follower','helper','filming','exec','ops','writer','owner']}];
 const mail=u=>String(u).trim().toLowerCase()+'@3awda.app';
 const say=(id,t,c)=>{const m=$(id);if(m){m.textContent=t;m.className='msg '+(c||'')}};
-const errAr=e=>{const m=(e&&e.message)||'';if(/Invalid login/i.test(m))return 'اسم المستخدم أو الرمز غير صحيح';if(/banned/i.test(m))return 'الحساب موقوف';if(/same password/i.test(m))return 'اختر رمزاً مختلفاً عن الحالي';return m||'حدث خطأ'};
+const errAr=e=>{const m=(e&&e.message)||'';if(/Invalid login/i.test(m))return 'اسم المستخدم أو الرمز غير صحيح';if(/banned/i.test(m))return 'الحساب موقوف';if(/same password/i.test(m))return 'اختر رمزاً مختلفاً عن الحالي';if(/row-level security/i.test(m))return 'غير مسموح لك بهذا الإجراء';return m||'حدث خطأ'};
+const R=()=>S.me.role,isMgr=()=>['owner','exec'].includes(R()),canOut=()=>isMgr()||R()==='ops'||!!S.me.outputs,canSeeIdeas=()=>['owner','exec','filming','ops','editing'].includes(R()),canIdea=()=>R()==='writer'||canSeeIdeas(),canPst=()=>['owner','exec','filming'].includes(R()),canShot=()=>['owner','filming'].includes(R());
+const SHOOTR=()=>SHOOT.includes(R());
+const dkey=off=>lt(Date.now()+off*86400e3).toISOString().slice(0,10),dayD=k=>Date.parse(k+'T12:00:00+02:00'),dkey2=t=>lt(t).toISOString().slice(0,10);
+const fdate=t=>{const d=lt(t);return AR[d.getUTCMonth()]+' '+d.getUTCDate()+' · '+['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'][d.getUTCDay()]};
+const COLS=['#11809a','#5bc56e','#f2b21a','#e8782a','#7a6bd0','#88aaaa'];
+const PSTAT=['قيد النظر','مقبولة','مرفوضة'],RKINDS=['مشكلة في الموقع','ملاحظة عن الصفحة أو القوائم','مشروع ناقص أو اسم خاطئ','أخرى'],IKINDS=['فكرة نشر','إضافة أو معلومة'];
+const nm=u=>{const p=S.people.find(x=>x.id===u);return p?p.name:null};
+async function upload(f){const ext=((f.name||'').split('.').pop()||'bin').replace(/[^a-z0-9]/gi,'').slice(0,5)||'bin';const path=S.me.id+'/'+Date.now()+'-'+Math.random().toString(36).slice(2,8)+'.'+ext;const {error}=await sb.storage.from('media').upload(path,f,{contentType:f.type||undefined});if(error)throw error;return{url:sb.storage.from('media').getPublicUrl(path).data.publicUrl,type:f.type||'',name:f.name}}
 async function boot(){
   const {data:{session}}=await sb.auth.getSession();
   if(!session)return loginView();
@@ -78,68 +87,215 @@ function bindChange(force){
   b.onclick=async()=>{const a=$('#n1').value,c=$('#n2').value;if(a.length<6)return say('#cm','الرمز أقل من 6 خانات','err');if(a!==c)return say('#cm','الرمزان غير متطابقين','err');
     const {error}=await sb.auth.updateUser({password:a});if(error)return say('#cm',errAr(error),'err');await sb.rpc('password_changed');S.me.must_change=false;say('#cm','تم حفظ الرمز','ok');if(force){await loadAll();render()}};
 }
-const myTabs=()=>{const r=S.me.role,t=[['home','الرئيسية']];if(SHOOT.includes(r))t.push(['lists','قوائم التصوير']);t.push(['acc','حسابي']);if(r==='owner')t.push(['ppl','الأشخاص']);return t};
+const myTabs=()=>{const t=[['home','الرئيسية']];if(SHOOTR())t.push(['lists','قوائم التصوير']);t.push(['prog','برامج المنصة'],['meet','الاجتماعات'],['stats','الإحصائيات']);if(canIdea())t.push(['pid','أفكار البرامج وReel']);t.push(['idea','أفكار ونشر'],['avoid','نبتعد عن تكراره'],['dev','صفحات الأجهزة'],['why','لماذا أُنشئ الموقع'],['prob','مشاكل العمل بالطريقة السابقة'],['ph','دفتر أرقامي'],['bal','ملاحظة أو بلاغ'],['acc','حسابي']);if(R()==='owner')t.push(['ppl','الأشخاص']);return t};
 async function loadAll(){
-  if(SHOOT.includes(S.me.role)){
-    const [l,s]=await Promise.all([sb.from('lists').select('*').order('date',{ascending:false}),sb.from('shot').select('*')]);
-    S.lists=l.data||[];S.shot={};(s.data||[]).forEach(x=>S.shot[x.key]=x);if(!S.cur||!S.lists.some(x=>x.date===S.cur))S.cur=S.lists[0]&&S.lists[0].date;
-  }
-  if(S.me.role==='owner'){const {data}=await sb.from('profiles').select('*').order('created_at');S.people=data||[]}
+  const q=async p=>{try{const r=await p;return r.error?[]:(r.data||[])}catch(e){return[]}};
+  const J={cfg:sb.from('config').select('*'),meetings:sb.from('meetings').select('*').order('at'),notes:sb.from('meeting_notes').select('*'),occ:sb.from('occasions').select('*'),swaps:sb.from('swaps').select('*'),devices:sb.from('devices').select('*').order('ts'),phones:sb.from('phones').select('*').order('name'),reports:sb.from('reports').select('*').order('ts',{ascending:false}),pub:sb.from('pub_ideas').select('*').order('ts',{ascending:false}).limit(300),ideas:sb.from('ideas').select('*').order('ts',{ascending:false}),people:sb.from('profiles').select('*').order('created_at')};
+  if(SHOOTR()){J.lists=sb.from('lists').select('*').order('date',{ascending:false});J.shot=sb.from('shot').select('*')}
+  const ks=Object.keys(J);const rs=await Promise.all(ks.map(k=>q(J[k])));const o={};ks.forEach((k,i)=>o[k]=rs[i]);
+  S.cfg={};o.cfg.forEach(x=>S.cfg[x.key]=x.value);['meetings','notes','occ','swaps','devices','phones','reports','pub','ideas','people'].forEach(k=>S[k]=o[k]);
+  if(o.lists){S.lists=o.lists;S.shot={};o.shot.forEach(x=>S.shot[x.key]=x);if(!S.cur||!S.lists.some(x=>x.date===S.cur))S.cur=S.lists[0]&&S.lists[0].date}
 }
 function render(){
   if(!S.me)return;if(!myTabs().some(t=>t[0]===S.tab))S.tab='home';
   const nav=myTabs().map(([k,l])=>'<button role="tab" aria-selected="'+(S.tab===k)+'" data-tab="'+k+'">'+l+'</button>').join('');
-  const v={home:homeView,lists:listsView,acc:accView,ppl:pplView}[S.tab]();
-  $('#app').innerHTML='<header class="top"><div class="hrow"><img src="'+ICON+'" alt=""><h1>منصة عودة الحياة<small>'+esc(S.me.name)+' · '+esc(S.me.title||ROLES[S.me.role])+'</small></h1><div class="clk"><span id="clk">'+clockTxt()+'</span>'+FLAG+'</div></div><nav role="tablist">'+nav+'</nav></header><main>'+v+'</main>';
+  const V={home:homeView,lists:listsView,prog:progView,meet:meetView,stats:statsView,pid:pidView,idea:ideaView,avoid:avoidView,dev:devView,why:whyView,prob:probView,ph:phView,bal:balView,acc:accView,ppl:pplView};
+  $('#app').innerHTML='<header class="top"><div class="hrow"><img src="'+ICON+'" alt=""><h1>منصة عودة الحياة<small>'+esc(S.me.name)+' · '+esc(S.me.title||ROLES[R()])+'</small></h1><div class="clk"><span id="clk">'+clockTxt()+'</span>'+FLAG+'</div></div><nav role="tablist">'+nav+'</nav></header><main>'+V[S.tab]()+'</main>';
   if(S.tab==='acc')bindChange(false);
 }
-function homeView(){return '<div class="card"><h2>أهلاً '+esc(S.me.name)+' 👋</h2><p class="hint">دورك في المنصة: <b>'+esc(S.me.title||ROLES[S.me.role])+'</b></p></div><div class="card"><h2>المرحلة الأولى</h2><p class="hint">الدخول والأدوار وقوائم التصوير جاهزة للتجربة. بقية الأقسام تنتقل تباعاً من الصفحات القديمة.</p></div>'}
-function accView(){return '<div class="card"><h2>حسابي</h2><div class="top2"><span>الاسم</span><b>'+esc(S.me.name)+'</b></div><div class="top2"><span>اسم المستخدم</span><b dir="ltr">'+esc(S.me.username)+'</b></div><div class="top2"><span>الصفة</span><b>'+esc(S.me.title||ROLES[S.me.role])+'</b></div><div class="acts"><button class="del" data-act="logout">تسجيل الخروج</button></div></div>'+changeView(false)}
-const canShot=()=>['owner','filming'].includes(S.me.role);
-const shotKey=(d,i)=>d+'__'+i;
+const refresh=async()=>{await loadAll();render()};
+setInterval(()=>{if(S.me&&!/INPUT|TEXTAREA|SELECT/.test((document.activeElement||{}).tagName||''))refresh()},60000);
+/* ---------- flash duty ---------- */
+function dutyOn(off){const es=(S.cfg.flash&&S.cfg.flash.entries)||[];const dw=lt(Date.now()+off*86400e3).getUTCDay(),k=dkey(off);let names=es.filter(e=>e.days.includes(dw)).map(e=>e.name);S.swaps.filter(w=>w.date===k).forEach(w=>{names=names.map(n=>n===w.from_name?w.with_name:n)});return names}
+const myEntry=()=>((S.cfg.flash&&S.cfg.flash.entries)||[]).find(e=>(S.me.name||'').includes(e.key));
+function dutyCards(){
+  if(!S.cfg.flash)return '';let h='';const e=myEntry(),t0=dutyOn(0),t1=dutyOn(1);
+  if(e&&t0.includes(e.name))h+='<div class="notice ok">مرحباً '+esc(e.name)+'، نتمنى لك التوفيق اليوم في كتابة ليدات النشر الفوري 😊</div>';else if(e&&t1.includes(e.name))h+='<div class="notice">تذكير: غداً لديك كتابة ليدات النشر الفوري</div>';
+  if(t0.length)h+='<div class="hint">كاتب النشر الفوري اليوم: <b>'+t0.map(esc).join('، ')+'</b></div>';
+  S.swaps.filter(w=>w.date>=dkey(0)).sort((a,b)=>a.date<b.date?-1:1).forEach(w=>{h+='<div class="notice">تبديل: '+esc(w.with_name)+' تكتب النشر الفوري بدل '+esc(w.from_name)+' يوم '+esc(fdate(dayD(w.date)))+(w.by_id===S.me.id||R()==='owner'?' · <a href="#" data-act="delswap" data-id="'+w.id+'">إلغاء</a>':'')+'</div>'});
+  if(e){const up=[];for(let i=0;i<14;i++)if(dutyOn(i).includes(e.name))up.push(i);const others=S.cfg.flash.entries.filter(x=>x.name!==e.name);
+    h+='<div class="card"><h2>تبديل يوم النشر الفوري</h2><p class="hint">اتفق أولاً مع الكاتب الآخر على واتساب، ثم سجّل التبديل هنا ليظهر للجميع.</p>'+(up.length?'<div class="row2"><div><label class="l" for="sd">اليوم</label><select id="sd">'+up.map(i=>'<option value="'+dkey(i)+'">'+esc(fdate(dayD(dkey(i))))+'</option>').join('')+'</select></div><div><label class="l" for="sw">يكتب بدلاً مني</label><select id="sw">'+others.map(x=>'<option>'+esc(x.name)+'</option>').join('')+'</select></div></div><label class="hint"><input type="checkbox" id="sok" style="width:auto;min-height:0"> اتفقت معه وهو موافق</label><div class="bar"><button class="go" data-act="addswap">تسجيل التبديل</button><span class="msg" id="swm" role="status"></span></div>':'<p class="hint">لا أيام لك في الأسبوعين القادمين.</p>')+'</div>'}
+  return h
+}
+function weekCard(){
+  const rows=[],names=['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
+  for(let i=0;i<7;i++){const k=dkey(i),dw=lt(Date.now()+i*86400e3).getUTCDay();const ms=S.meetings.filter(m=>dkey2(m.at)===k).sort((a,b)=>a.at-b.at),oc=S.occ.filter(o=>o.date===k),du=dutyOn(i),parts=[];
+    ms.forEach(m=>parts.push('<span class="tag '+(m.status==='canceled'?'warn':'')+'">'+(m.status==='canceled'?'أُلغي: ':'')+esc(m.title)+' · '+esc(ftime(m.at))+'</span>'));if(du.length)parts.push('<span class="tag ok">نشر فوري: '+du.map(esc).join('، ')+'</span>');oc.forEach(o=>parts.push('<span class="tag warn">'+esc(o.title)+'</span>'));
+    rows.push('<div class="top2" style="align-items:flex-start;border-top:1px solid var(--line);padding-top:8px"><b style="min-width:5.5em">'+(i===0?'اليوم':names[dw])+'</b><div class="chips" style="flex:1">'+(parts.join('')||'<span class="hint">—</span>')+'</div></div>')}
+  return '<div class="card"><h2>جدول الأسبوع</h2>'+rows.join('')+'</div>'
+}
+function occCard(){
+  const up=S.occ.filter(o=>o.date>=dkey(0)).sort((a,b)=>a.date<b.date?-1:1).slice(0,12);
+  const form=isMgr()?'<div class="row2"><div><label class="l" for="ot">المناسبة</label><input id="ot"></div><div><label class="l" for="od">التاريخ</label><input id="od" type="date"></div></div><div class="bar"><button class="go sm" data-act="addocc">إضافة</button><span class="msg" id="om"></span></div>':'';
+  return '<div class="card"><h2>مناسبات قادمة</h2>'+(up.length?up.map(o=>'<div class="top2"><span>'+esc(o.title)+'</span><span class="date">'+esc(fdate(dayD(o.date)))+(isMgr()?' · <a href="#" data-act="delocc" data-id="'+o.id+'" class="del">حذف</a>':'')+'</span></div>').join(''):'<p class="hint">لا مناسبات مسجلة.</p>')+form+'</div>'
+}
+/* ---------- home / meetings ---------- */
+const nextMeeting=()=>S.meetings.filter(m=>m.status!=='canceled'&&m.at>Date.now()-3600e3).sort((a,b)=>a.at-b.at)[0];
+function remind(m){if(!m)return '';const h=(m.at-Date.now())/3600e3;if(h>12||h<-1)return '';return '<div class="notice">🔔 تذكير: '+esc(m.title)+' '+(h<=0?'بدأ الآن':'بعد '+(h<1?Math.max(1,Math.round(h*60))+' دقيقة':Math.round(h)+' ساعة'))+' · '+esc(ftime(m.at))+'</div>'}
+function homeView(){
+  const m=nextMeeting(),canc=S.meetings.filter(x=>x.status==='canceled'&&x.canceled_at>Date.now()-3*86400e3);
+  const cs=LINKS.filter(l=>l.r.includes(R())).map(l=>'<a class="item" href="'+esc(l.u)+'" target="_blank" rel="noopener" style="text-decoration:none;color:inherit;border-inline-start:6px solid var(--g)"><b>'+esc(l.t)+'</b><span class="hint">'+esc(l.d)+' (تنتقل لاحقاً إلى هذا الموقع)</span></a>').join('');
+  return dutyCards()+remind(m)+(canc.length?'<div class="notice" style="background:var(--bad-soft);color:var(--bad)">أُلغي اجتماع: '+canc.map(x=>esc(x.title)).join('، ')+'</div>':'')+
+  (m?'<div class="card"><h2>الاجتماع القادم</h2><div class="pn">'+esc(m.title)+'</div><div>'+esc(fdate(m.at))+' · '+esc(ftime(m.at))+'</div>'+(m.place?'<div class="hint">'+esc(m.place)+'</div>':'')+'</div>':'')+weekCard()+occCard()+(cs?'<h2>صفحات أخرى</h2>'+cs:'');
+}
+function icsFor(m){const d=t=>new Date(t).toISOString().replace(/[-:]/g,'').replace(/\.\d+/,'');return ['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//3awdalibya//meetings//AR','BEGIN:VEVENT','UID:'+m.id+'@3awdalibya','DTSTAMP:'+d(Date.now()),'DTSTART:'+d(m.at),'DTEND:'+d(m.at+3600e3),'SUMMARY:'+(m.title||'اجتماع').replace(/[\r\n,;]/g,' '),'LOCATION:'+(m.place||'').replace(/[\r\n,;]/g,' '),'BEGIN:VALARM','ACTION:DISPLAY','DESCRIPTION:تذكير بالاجتماع','TRIGGER:-PT12H','END:VALARM','END:VEVENT','END:VCALENDAR'].join('\r\n')}
+function meetView(){
+  const now=Date.now(),up=S.meetings.filter(m=>m.at>=now-3600e3).sort((a,b)=>a.at-b.at),past=S.meetings.filter(m=>m.at<now-3600e3).sort((a,b)=>b.at-a.at);
+  const form=isMgr()?'<section class="card"><h2>اجتماع جديد</h2><div><label class="l" for="mt">العنوان</label><input id="mt" placeholder="الاجتماع الأسبوعي"></div><div class="row2"><div><label class="l" for="md">اليوم</label><input id="md" type="date"></div><div><label class="l" for="mh">الساعة</label><input id="mh" type="time" value="11:00"></div></div><div><label class="l" for="mp">المكان أو الرابط <span class="hint">(اختياري)</span></label><input id="mp"></div><div class="bar"><button class="go" data-act="addmeet">إنشاء الاجتماع</button><span class="msg" id="mm" role="status"></span></div></section>':'';
+  return remind(nextMeeting())+form+'<h2>القادمة</h2><div class="feed">'+(up.length?up.map(m=>meetItem(m,true)).join(''):'<div class="empty">لا اجتماعات قادمة.</div>')+'</div>'+(past.length?'<h2>السابقة والمخرجات</h2><div class="feed">'+past.map(m=>meetItem(m,false)).join('')+'</div>':'')
+}
+function meetItem(m,up){
+  const c=m.status==='canceled',notes=S.notes.filter(n=>n.meeting_id===m.id).sort((a,b)=>a.at-b.at);
+  return '<div class="item" style="'+(c?'background:var(--bad-soft);border-color:var(--bad)':'')+'"><div class="top2"><span class="pn" '+(c?'style="text-decoration:line-through"':'')+'>'+esc(m.title)+'</span>'+(c?'<span class="tag warn">أُلغي</span>':'')+'</div><div>'+esc(fdate(m.at))+' · '+esc(ftime(m.at))+'</div>'+(m.place?'<div class="hint">'+esc(m.place)+'</div>':'')+(c?'<div class="hint">ألغاه: '+esc(m.canceled_by_name||'')+'</div>':'<div class="hint">حدّده: '+esc(m.by_name||'')+'</div>')+
+  notes.map(n=>'<div class="notice ok"><div class="txt">'+esc(n.text)+'</div><div class="hint">كتبها: '+esc(n.by_name)+' · '+esc(fdt(n.at))+(n.by_id===S.me.id||R()==='owner'?' · <a href="#" class="del" data-act="delnote" data-id="'+n.id+'">حذف</a>':'')+'</div></div>').join('')+
+  (canOut()&&!c?'<div><label class="l" for="on_'+m.id+'">مخرجات الاجتماع</label><textarea id="on_'+m.id+'" style="min-height:64px"></textarea></div><div class="acts"><button data-act="addnote" data-id="'+m.id+'">إضافة المخرجات</button></div>':'')+
+  '<div class="acts">'+(up&&!c?'<button data-act="ics" data-id="'+m.id+'">أضف إلى تقويم هاتفي (تنبيه قبل 12 ساعة)</button>':'')+(isMgr()&&up&&!c?'<button class="del" data-act="cancelmeet" data-id="'+m.id+'">إلغاء الاجتماع</button>':'')+(R()==='owner'?'<button class="del" data-act="delmeet" data-id="'+m.id+'">حذف</button>':'')+'</div></div>'
+}
+/* ---------- lists ---------- */
 function itemCard(date,i,r,sec){
-  const k=shotKey(date,sec+i),sh=S.shot[k];const bd=[];
+  const k=date+'__'+sec+i,sh=S.shot[k];const bd=[];
   if(r.perm==='K')bd.push('<span class="tag warn">يلزم التنسيق قبل الوصول</span>');else if(r.perm_ar)bd.push('<span class="tag">'+esc(r.perm_ar)+'</span>');if(r.sens)bd.push('<span class="tag warn">موقع حساس</span>');
   const place=['وسط','شرق','غرب','جنوب'].includes(r.region)?'طرابلس · '+r.region:(r.region||'');
-  return '<div class="item" style="'+(sh?'border-color:var(--ok);background:var(--ok-soft)':'')+'"><div class="top2"><span class="pn">'+i+'. '+esc(r.proj)+'</span><span class="hint">'+esc(place)+'</span></div>'+
-  (r.idea?'<div><span class="hint">ما نصوّره</span><div class="txt">'+esc(r.idea)+'</div></div>':'')+(r.why?'<div><span class="hint">سبب التصوير</span><div class="txt">'+esc(r.why)+'</div></div>':'')+
+  return '<div class="item" style="'+(sh?'border-color:var(--ok);background:var(--ok-soft)':'')+'"><div class="top2"><span class="pn">'+i+'. '+esc(r.proj)+'</span><span class="hint">'+esc(place)+'</span></div>'+(r.idea?'<div><span class="hint">ما نصوّره</span><div class="txt">'+esc(r.idea)+'</div></div>':'')+(r.why?'<div><span class="hint">سبب التصوير</span><div class="txt">'+esc(r.why)+'</div></div>':'')+
   '<div class="chips">'+bd.join('')+(r.map?'<a class="tag" href="'+esc(r.map)+'" target="_blank" rel="noopener">الموقع على الخريطة</a>':'')+'</div>'+
-  (r.info?'<div class="acts"><button data-act="info" data-k="'+k+'">'+(S.open&&S.open[k]?'إخفاء المعلومات':'معلومات عن المشروع')+'</button></div>'+(S.open&&S.open[k]?'<div class="notice" style="font-weight:400"><div class="txt">'+esc(r.info).split(' | ').join('\n')+'</div></div>':''):'')+
-  (sh?'<div class="notice ok">✓ تم التصوير · '+esc(sh.by_name||'')+' · '+esc(fdt(Date.parse(sh.at)))+'</div>':'')+
-  (canShot()?'<div class="acts">'+(sh?'<button class="del" data-act="unshot" data-k="'+k+'">تراجع</button>':'<button class="go g sm" data-act="shot" data-k="'+k+'" data-d="'+date+'" data-p="'+esc(r.proj)+'">تم التصوير</button>')+'</div>':'')+'</div>'
+  (r.info?'<div class="acts"><button data-act="info" data-k="'+k+'">'+(S.open[k]?'إخفاء المعلومات':'معلومات عن المشروع')+'</button></div>'+(S.open[k]?'<div class="notice" style="font-weight:400"><div class="txt">'+esc(r.info).split(' | ').join('\n')+'</div></div>':''):'')+
+  (sh?'<div class="notice ok">✓ تم التصوير · '+esc(sh.by_name||'')+' · '+esc(fdt(Date.parse(sh.at)))+'</div>':'')+(canShot()?'<div class="acts">'+(sh?'<button class="del" data-act="unshot" data-k="'+k+'">تراجع</button>':'<button class="go g sm" data-act="shot" data-k="'+k+'" data-d="'+date+'" data-p="'+esc(r.proj)+'">تم التصوير</button>')+'</div>':'')+'</div>'
 }
 function listsView(){
   if(!S.lists.length)return '<div class="empty">لا قوائم بعد.</div>';
-  const L=S.lists.find(x=>x.date===S.cur).data;const dailyShot=Object.keys(S.shot).filter(k=>k.startsWith(S.cur+'__d')).length;
-  const groups={};(L.prog||[]).forEach((r,i)=>{(groups[r.prog]=groups[r.prog]||[]).push({r,i:i+1})});
+  const L=S.lists.find(x=>x.date===S.cur).data,dailyShot=Object.keys(S.shot).filter(k=>k.startsWith(S.cur+'__d')).length,groups={};(L.prog||[]).forEach((r,i)=>{(groups[r.prog]=groups[r.prog]||[]).push({r,i:i+1})});
   return '<div class="card"><div class="top2"><h2>قائمة التصوير رقم '+esc(L.n)+'</h2><span class="hint">'+esc(L.date)+'</span></div><p class="hint">وقت التصوير تقدّرونه أنتم. صُوّر '+dailyShot+' من '+L.items.length+' في التحديث اليومي.</p><div class="chips">'+S.lists.map(x=>'<button class="chip" aria-pressed="'+(x.date===S.cur)+'" data-act="issue" data-v="'+x.date+'">'+esc(x.date)+'</button>').join('')+'</div></div>'+
-  '<h2>التحديث اليومي · '+L.items.length+'</h2><div class="feed">'+L.items.map((r,i)=>itemCard(S.cur,i+1,r,'d')).join('')+'</div>'+
-  '<h2>اقتراحات البرامج</h2>'+Object.keys(groups).map(pn=>'<div class="card"><h2>برنامج «'+esc(pn)+'»</h2><div class="feed">'+groups[pn].map(x=>itemCard(S.cur,x.i,x.r,'p')).join('')+'</div></div>').join('');
+  '<h2>التحديث اليومي · '+L.items.length+'</h2><div class="feed">'+L.items.map((r,i)=>itemCard(S.cur,i+1,r,'d')).join('')+'</div><h2>اقتراحات البرامج</h2>'+Object.keys(groups).map(pn=>'<div class="card"><h2>برنامج «'+esc(pn)+'»</h2><div class="feed">'+groups[pn].map(x=>itemCard(S.cur,x.i,x.r,'p')).join('')+'</div></div>').join('');
 }
+/* ---------- programs / stats / avoid ---------- */
+function progView(){
+  const P=(S.cfg.stats&&S.cfg.stats.programs)||{},names=Object.keys(P);if(!names.length)return '<div class="empty">لا بيانات بعد.</div>';
+  const cur=P[S.pg]?S.pg:names[0],L=P[cur];
+  return '<div class="card"><h2>برامج منصة عودة الحياة</h2><div class="chips">'+names.map(n=>'<button class="chip" aria-pressed="'+(n===cur)+'" data-act="pg" data-v="'+esc(n)+'">'+esc(n)+' ('+P[n].length+')</button>').join('')+'</div></div>'+
+  '<div class="card"><div class="top2"><h2>'+esc(cur)+'</h2><span class="hint">'+L.length+' حلقة · الأحدث أولاً</span></div>'+(L.length?'<div class="notice">آخر حلقة قبل '+Math.max(0,Math.round((dayD(dkey(0))-dayD(L[0].d))/86400e3))+' يوماً</div>':'')+L.map((x,i)=>'<div class="top2" style="border-top:1px solid var(--line);padding-top:8px"><span><b>'+(L.length-i)+'.</b> '+esc(x.p)+'</span><span class="date">'+esc(fdate(dayD(x.d)))+' '+x.d.slice(0,4)+'</span></div>').join('')+'</div>'
+}
+const pct=(a,b)=>b?Math.round(a*1000/b)/10:0;
+function donut(items){const tot=items.reduce((s,x)=>s+x.v,0)||1;let off=0;const Rr=42,C=2*Math.PI*Rr;const arcs=items.map((x,i)=>{const len=x.v/tot*C;const a='<circle r="'+Rr+'" cx="60" cy="60" fill="none" stroke="'+COLS[i%6]+'" stroke-width="22" stroke-dasharray="'+len+' '+(C-len)+'" stroke-dashoffset="'+(-off)+'" transform="rotate(-90 60 60)"/>';off+=len;return a}).join('');
+  return '<div class="chips" style="gap:16px;align-items:center"><svg viewBox="0 0 120 120" width="150" height="150" role="img" aria-label="توزيع">'+arcs+'<text x="60" y="66" text-anchor="middle" font-size="18" font-weight="700" fill="currentColor">'+tot+'</text></svg><div style="display:flex;flex-direction:column;gap:4px;font-size:.92rem;flex:1;min-width:160px">'+items.map((x,i)=>'<div><i style="display:inline-block;width:11px;height:11px;border-radius:3px;margin-inline-end:6px;background:'+COLS[i%6]+'"></i>'+esc(x.k)+' <b>'+x.v+'</b> · '+pct(x.v,tot)+'%</div>').join('')+'</div></div>'}
+const pbar=w=>'<div style="height:9px;border-radius:9px;background:var(--line);overflow:hidden"><i style="display:block;height:100%;width:'+w+'%;background:linear-gradient(90deg,var(--g),var(--t))"></i></div>';
+function statsView(){
+  const st=S.cfg.stats;if(!st)return '<div class="empty">الإحصائيات لم تُجهَّز بعد.</div>';
+  const v=st.videos,names=Object.keys(v),sum=a=>a.reduce((x,y)=>x+y,0),vn=names.filter(n=>n!=='الريلز'),tot=vn.map(n=>({k:n,v:sum(v[n])})),reels=sum(v['الريلز']||[]),longv=tot.reduce((a,x)=>a+x.v,0),all=longv+reels;
+  const mt=st.months.map((_,i)=>vn.reduce((s,n)=>s+(v[n][i]||0),0)),mx=Math.max(...mt,1),li=mt.length-1,d=mt[li]-mt[li-1];
+  const bars='<div style="display:flex;align-items:flex-end;gap:6px;height:130px;padding-top:16px">'+mt.map(x=>'<div style="flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;height:100%"><em style="font-style:normal;font-size:.72rem;color:var(--muted)">'+x+'</em><div style="width:100%;border-radius:5px 5px 0 0;background:linear-gradient(var(--g),var(--t));min-height:2px;height:'+Math.round(x/mx*100)+'%"></div></div>').join('')+'</div><div style="display:flex;gap:6px;font-size:.72rem;color:var(--muted);text-align:center">'+st.months.map(m=>'<span style="flex:1">'+AR[+m.slice(5)-1]+'</span>').join('')+'</div>';
+  const gp=Object.keys(st.gfx_periods),gmx=Math.max(...gp.map(k=>st.gfx_periods[k]),1),gtot=st.gfx_total,tp=Object.entries(st.gfx_templates).map(([k,x])=>({k,v:x}));
+  const kpi=(b,s)=>'<div class="card" style="text-align:center;padding:12px"><b style="font:700 1.7rem var(--disp);color:var(--brand)">'+b+'</b><small class="hint">'+s+'</small></div>';
+  return '<div class="card"><h2>الإحصائيات</h2><p class="hint">أرقام ونسب فقط · حتى '+esc(st.asof)+'</p></div><div class="row2">'+kpi(all,'فيديو منشور في 2026 ('+reels+' ريلز)')+kpi(gtot,'تصميم جرافيك مُسجَّل')+'</div>'+
+  '<div class="card"><h2>أنواع الفيديو 2026 (بدون الريلز)</h2>'+donut(tot)+'</div><div class="card"><h2>الريلز مقابل الفيديو</h2>'+donut([{k:'الريلز',v:reels},{k:'الفيديو',v:longv}])+'</div>'+
+  '<div class="card"><h2>الفيديو شهرياً (بدون الريلز)</h2><div class="hint">'+(d>=0?'▲ '+d:'▼ '+Math.abs(d))+' عن الشهر السابق (الشهر الحالي لم يكتمل)</div>'+bars+'</div>'+
+  (st.cities?'<div class="card"><h2>المشاريع حسب المدن</h2><p class="hint">'+st.cities_total+' مشروعاً في '+st.cities_n+' مدينة ومنطقة، أعداد ونسب فقط.</p>'+st.cities.map(x=>'<div><div class="top2"><span>'+esc(x.k)+'</span><b>'+x.v+' · '+pct(x.v,st.cities_total)+'%</b></div>'+pbar(Math.round(x.v/st.cities[0].v*100))+'</div>').join('')+'</div>':'')+
+  '<div class="card"><h2>الجرافيك حسب الفترات</h2><p class="hint">قبل أكتوبر 2026 لا توجد أرقام شهرية منفصلة، فنعرض الفترات المتاحة.</p>'+gp.map(k=>'<div><div class="top2"><span>'+esc(k)+'</span><b>'+st.gfx_periods[k]+' · '+pct(st.gfx_periods[k],gtot)+'%</b></div>'+pbar(Math.round(st.gfx_periods[k]/gmx*100))+'</div>').join('')+'</div>'+
+  '<div class="card"><h2>الجرافيك حسب القالب</h2>'+donut(tp.slice(0,6).concat(tp.length>6?[{k:'أخرى',v:tp.slice(6).reduce((a,x)=>a+x.v,0)}]:[]))+'</div>';
+}
+function avoidView(){
+  const st=S.cfg.stats,rep=(st&&st.repeats)||[],by={};rep.forEach(x=>(by[x.t]=by[x.t]||[]).push(x));
+  return '<div class="card"><h2>نبتعد عن تكراره</h2><p class="hint">أفكار جرافيك تكررت في الأرشيف (الانفوجراف يُعدّ مكرراً من ثلاث مرات، و«عودة الحياة مرت من هنا» من مرة واحدة). اقتراح جديد عنها يجب أن يضيف جديداً. تظهر الفكرة فقط بلا نص.</p></div>'+
+  (Object.keys(by).length?Object.keys(by).map(t=>'<div class="card"><h2>'+esc(t)+'</h2>'+(t==='عودة الحياة مرت من هنا'?'<p class="hint" style="margin:0">هذا القالب يُنشر مرة واحدة لكل مشروع: كل ما ظهر هنا نُشر من قبل.</p>':'')+by[t].map(x=>'<div class="top2"><span>'+esc(x.p)+'</span><span class="tag warn">×'+x.n+'</span></div>').join('')+'</div>').join(''):'<div class="empty">لا قائمة بعد.</div>')
+}
+function whyView(){const w=S.cfg.why;if(!w)return '<div class="empty">لم يُجهَّز بعد.</div>';return '<div class="card"><h2>لماذا أُنشئ هذا الموقع</h2><div class="txt">'+esc(w.intro)+'</div></div><div class="feed">'+w.items.map(x=>'<div class="item"><div class="top2"><span class="pn">'+esc(x.p)+'</span><span class="tag '+(x.st==='موجود'?'ok':'warn')+'">'+esc(x.st)+'</span></div><div class="txt">'+esc(x.s)+'</div></div>').join('')+'</div>'}
+function probView(){
+  const p=S.cfg.problems||{groups:[]},edit=R()==='owner',gs=p.groups||[];
+  return '<div class="card"><h2>مشاكل العمل بالطريقة السابقة</h2><p class="hint">للجميع، للقراءة فقط. الأرقام من سجلات 2026 المتوفرة.</p><div class="chips">'+gs.map((g,i)=>'<button class="chip" aria-pressed="'+(S.pgi===i)+'" data-act="pgi" data-i="'+i+'">'+esc(g.title)+' ('+g.items.length+')</button>').join('')+'</div></div>'+
+  (gs[S.pgi]?'<div class="feed">'+gs[S.pgi].items.map((x,i)=>'<div class="item"><div class="pn">'+(i+1)+'. '+esc(x.t)+'</div><div class="txt">'+esc(x.d||'')+'</div>'+(edit?'<div class="acts"><button class="del" data-act="delprob" data-i="'+i+'">حذف</button></div>':'')+'</div>').join('')+'</div>':'<div class="empty">لا شيء بعد.</div>')+
+  (edit?'<section class="card"><h2>إضافة مشكلة إلى «'+esc((gs[S.pgi]||{}).title||'')+'»</h2><div><label class="l" for="pt">العنوان</label><input id="pt"></div><div><label class="l" for="pd">التفصيل</label><textarea id="pd"></textarea></div><div class="bar"><button class="go" data-act="addprob">إضافة</button><span class="msg" id="pm"></span></div></section>':'')
+}
+/* ---------- devices / phones ---------- */
+function devView(){
+  const form=R()==='owner'?'<section class="card"><h2>إضافة صفحة جهاز</h2><div><label class="l" for="dn">اسم الجهاز</label><input id="dn"></div><div><label class="l" for="du">رابط الصفحة</label><input id="du" type="url" dir="ltr" placeholder="https://"></div><div><label class="l" for="di">صورة الصفحة</label><input id="di" type="file" accept="image/*"></div><div class="bar"><button class="go" data-act="adddev">إضافة</button><span class="msg" id="dm"></span></div></section>':'';
+  return '<div class="card"><h2>صفحات الأجهزة</h2><p class="hint">لنرى ما تعمله وتنشره هذه الجهات عن المشاريع.</p></div>'+form+'<div class="feed">'+(S.devices.length?S.devices.map(d=>'<div class="item"><a href="'+esc(d.url)+'" target="_blank" rel="noopener" style="display:flex;gap:12px;align-items:center;text-decoration:none;color:inherit">'+(d.img?'<img alt="" src="'+esc(d.img)+'" style="width:44px;height:44px;border-radius:50%;object-fit:cover">':'<span style="width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,var(--g),var(--t));color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700">'+esc((d.name||'؟')[0])+'</span>')+'<b>'+esc(d.name)+'</b></a>'+(R()==='owner'?'<div class="acts"><button class="del" data-act="deldev" data-id="'+d.id+'">حذف</button></div>':'')+'</div>').join(''):'<div class="empty">لا صفحات بعد.</div>')+'</div>'
+}
+function phRow(d,own){return '<div class="item"><div class="top2"><span class="pn">'+esc(d.name)+'</span><span class="tag">'+esc(d.kind||'')+'</span></div><div class="hint">'+esc(d.org||'')+(d.project?' · '+esc(d.project):'')+'</div>'+(d.note?'<div class="txt">'+esc(d.note)+'</div>':'')+'<div class="acts"><a href="tel:'+esc(d.phone)+'" dir="ltr">'+esc(d.phone)+'</a>'+(own?'<button class="del" data-act="delph" data-id="'+d.id+'">حذف</button>':'')+'</div></div>'}
+function phView(){
+  const form='<section class="card"><h2>إضافة رقم</h2><div><label class="l" for="pn">الاسم</label><input id="pn"></div><div class="chips">'+['مهندس','فني','مسؤول'].map(k=>'<button type="button" class="chip" aria-pressed="'+(S.F.pk===k)+'" data-act="pk" data-v="'+k+'">'+k+'</button>').join('')+'</div><div><label class="l" for="po">الجهة أو الشركة أو الجهاز</label><input id="po"></div><div class="row2"><div><label class="l" for="pp">الهاتف</label><input id="pp" type="tel" dir="ltr"></div><div><label class="l" for="pj">المشروع <span class="hint">(اختياري)</span></label><input id="pj"></div></div><div><label class="l" for="px">ملاحظة <span class="hint">(اختياري)</span></label><input id="px"></div><div class="bar"><button class="go" data-act="addph">حفظ</button><span class="msg" id="phm" role="status"></span></div></section>';
+  const mine=S.phones.filter(p=>p.owner_id===S.me.id);let h='<div class="card"><h2>دفتر أرقامي</h2><p class="hint">'+(R()==='owner'?'كل شخص يضيف أرقامه، وأنت كمنسّق ترى دفاتر الجميع.':'لا يراه غيرك.')+'</p></div>'+form+'<div class="feed">'+(mine.length?mine.map(p=>phRow(p,true)).join(''):'<div class="empty">لا أرقام بعد.</div>')+'</div>';
+  if(R()==='owner'){const by={};S.phones.filter(p=>p.owner_id!==S.me.id).forEach(p=>(by[p.owner_id]=by[p.owner_id]||[]).push(p));Object.keys(by).forEach(u=>{h+='<h2>دفتر '+esc(nm(u)||'مستخدم')+'</h2><div class="feed">'+by[u].map(p=>phRow(p,false)).join('')+'</div>'})}
+  return h
+}
+/* ---------- program / reel ideas ---------- */
+function pidView(){
+  const reel=S.pt==='reel';
+  const sw='<div class="chips"><button class="chip" aria-pressed="'+(!reel)+'" data-act="pt" data-v="prog">أفكار البرامج</button><button class="chip" aria-pressed="'+reel+'" data-act="pt" data-v="reel">أفكار Reel</button></div>';
+  const form=canIdea()?'<section class="card"><h2>'+(reel?'فكرة مونتاج Reel':'فكرة برنامج')+'</h2><p class="hint">'+(reel?'ضع رابط فيديو أو ريل من أي موقع كمرجع لأسلوب المونتاج، ويمكنك إضافة صورة أو ملف. تظهر للمنسّق وحسن وأنس والهادي وماجد باسمك.':'تصل إلى أنس (مدير التصوير) وماجد (مدير المونتاج) وحسن والهادي والمنسّق باسمك. لا يراها الكتّاب الآخرون.')+'</p><div><label class="l" for="it">'+(reel?'ما الذي أعجبك فيه؟':'الفكرة')+'</label><textarea id="it"></textarea></div><div><label class="l" for="il">رابط <span class="hint">(اختياري)</span></label><input id="il" type="url" dir="ltr" placeholder="https://"></div><div><label class="l" for="if">ملف أو صور <span class="hint">(اختياري)</span></label><input id="if" type="file" multiple accept="image/*,application/pdf,text/plain,video/*"></div><div class="bar"><button class="go" data-act="addidea">إرسال</button><span class="msg" id="im" role="status"></span></div></section>':'';
+  const rows=S.ideas.filter(x=>x.kind===S.pt);
+  return '<div class="card"><h2>أفكار البرامج وReel</h2>'+sw+'</div>'+form+'<div class="feed">'+(rows.length?rows.map(x=>{
+    const fl=(x.files||[]).map(f=>(f.type||'').startsWith('image')?'<a href="'+esc(f.url)+'" target="_blank" rel="noopener"><img alt="" src="'+esc(f.url)+'" style="max-width:100%;max-height:220px;border-radius:8px;border:1px solid var(--line)"></a>':'<a href="'+esc(f.url)+'" target="_blank" rel="noopener">'+esc(f.name||'ملف')+'</a>').join('');
+    const lk=/^https?:\/\//.test(x.link||'')?'<a href="'+esc(x.link)+'" target="_blank" rel="noopener" dir="ltr" style="overflow-wrap:anywhere">'+esc(x.link)+'</a>':'';const mine=x.by_id===S.me.id||R()==='owner';
+    return '<div class="item"><div class="top2"><span class="pn" style="color:var(--brand)">'+esc(x.by_name||nm(x.by_id)||'')+'</span><span class="date">'+esc(fdt(x.ts))+'</span></div><div class="txt">'+esc(x.text||'')+'</div>'+lk+fl+
+    (reel?'':(x.status?'<div class="notice ok">'+esc(x.status)+(x.note?' · '+esc(x.note):'')+' <span class="hint">('+esc(x.status_by||'')+')</span></div>':'<span class="tag warn" style="align-self:flex-start">بلا حالة</span>'))+
+    (!reel&&canPst()?'<div class="chips">'+PSTAT.map(s=>'<button class="chip" aria-pressed="'+(x.status===s)+'" data-act="pst" data-id="'+x.id+'" data-v="'+s+'">'+s+'</button>').join('')+'</div><div><input id="pn_'+x.id+'" placeholder="ملاحظة تصل للكاتب (اختياري)"></div>':'')+(mine?'<div class="acts"><button class="del" data-act="delidea" data-id="'+x.id+'">حذف</button></div>':'')+'</div>'}).join(''):'<div class="empty">لا أفكار.</div>')+'</div>'
+}
+/* ---------- reports / public ideas ---------- */
+const chipsB=(items,sel,key)=>items.map(t=>'<button type="button" class="chip" aria-pressed="'+sel(t)+'" data-act="'+key+'" data-v="'+esc(t)+'">'+esc(t)+'</button>').join('');
+function balView(){
+  const owner=R()==='owner';
+  const form='<section class="card"><h2>ملاحظة أو بلاغ</h2><p class="hint">لا يراها إلا المنسّق، والرد يصلك هنا.</p><div><span class="l">النوع</span><div class="chips">'+chipsB(RKINDS,t=>S.F.rk===t,'rk')+'</div></div><div><label class="l" for="rq">المشروع <span class="hint">(اختياري)</span></label><input id="rq"></div><div><label class="l" for="rt">التفاصيل</label><textarea id="rt"></textarea></div><div><label class="l" for="rf">صورة <span class="hint">(اختياري)</span></label><input type="file" id="rf" accept="image/*"></div><div class="bar"><button class="go" data-act="addrep">إرسال</button><span class="msg" id="rmsg" role="status"></span></div></section>';
+  const all=S.reports;
+  return form+'<div class="top2"><h2>'+(owner?'البلاغات والملاحظات':'ما أرسلته')+'</h2>'+(owner?'<span class="hint">'+all.filter(x=>!x.reply).length+' بلا رد</span>':'')+'</div><div class="feed">'+(all.length?all.map(d=>
+   '<div class="item"><div class="top2"><span class="pn">'+esc(d.kind||'')+(d.project?' · '+esc(d.project):'')+'</span><span class="date">'+esc(fdt(d.ts))+'</span></div>'+(owner?'<span class="who pn" style="color:var(--brand)">'+esc(d.user_id===S.me.id?'أنت':(d.user_name||nm(d.user_id)||''))+'</span>':'')+'<div class="txt">'+esc(d.text)+'</div>'+(d.media?'<img alt="" src="'+esc(d.media)+'" style="max-width:100%;max-height:220px;border-radius:8px">':'')+
+   (d.reply?'<div class="notice ok"><b>رد المنسّق:</b> '+esc(d.reply)+'</div>':'<span class="tag warn" style="align-self:flex-start">بانتظار الرد</span>')+
+   (owner?'<div><label class="l" for="rp_'+d.id+'">'+(d.reply?'تعديل الرد':'اكتب رداً')+'</label><textarea id="rp_'+d.id+'" style="min-height:60px">'+esc(d.reply||'')+'</textarea></div><div class="acts"><button data-act="reply" data-id="'+d.id+'">إرسال الرد</button><button class="del" data-act="delrep" data-id="'+d.id+'">حذف</button></div>':'')+'</div>').join(''):'<div class="empty">'+(owner?'لا بلاغات.':'لم ترسل شيئاً بعد.')+'</div>')+'</div>'
+}
+function ideaView(){
+  const form='<section class="card"><h2>فكرة نشر أو إضافة</h2><p class="hint">تظهر للجميع باسمك.</p><div><span class="l">النوع</span><div class="chips">'+chipsB(IKINDS,t=>S.F.ik===t,'ik')+'</div></div><div><label class="l" for="iq">المشروع <span class="hint">(اختياري)</span></label><input id="iq"></div><div><label class="l" for="it2">الفكرة</label><textarea id="it2"></textarea></div><div><label class="l" for="if2">صورة <span class="hint">(اختياري)</span></label><input type="file" id="if2" accept="image/*"></div><div class="bar"><button class="go" data-act="addpub">نشر الفكرة</button><span class="msg" id="im2" role="status"></span></div></section>';
+  return form+'<h2>أفكار الفريق</h2><div class="feed">'+(S.pub.length?S.pub.map(d=>'<div class="item"><div class="top2"><span class="pn">'+esc(d.kind||'')+(d.project?' · '+esc(d.project):'')+'</span><span class="date">'+esc(fdt(d.ts))+'</span></div><div class="txt">'+esc(d.text)+'</div>'+(d.media?'<img alt="" src="'+esc(d.media)+'" style="max-width:100%;max-height:220px;border-radius:8px">':'')+'<span class="pn" style="color:var(--brand)">'+esc(d.by_name||nm(d.by_id)||'')+'</span>'+(d.by_id===S.me.id||R()==='owner'?'<div class="acts"><button class="del" data-act="delpub" data-id="'+d.id+'">حذف</button></div>':'')+'</div>').join(''):'<div class="empty">لا أفكار بعد.</div>')+'</div>'
+}
+function accView(){return '<div class="card"><h2>حسابي</h2><div class="top2"><span>الاسم</span><b>'+esc(S.me.name)+'</b></div><div class="top2"><span>اسم المستخدم</span><b dir="ltr">'+esc(S.me.username)+'</b></div><div class="top2"><span>الصفة</span><b>'+esc(S.me.title||ROLES[S.me.role])+'</b></div><div class="acts"><button class="del" data-act="logout">تسجيل الخروج</button></div></div>'+changeView(false)}
 function pplView(){
   const opts=sel=>Object.keys(ROLES).map(r=>'<option value="'+r+'"'+(r===sel?' selected':'')+'>'+ROLES[r]+'</option>').join('');
   return '<div class="card"><h2>إضافة شخص</h2><div class="row2"><div><label class="l" for="nu">اسم المستخدم (إنجليزي)</label><input id="nu" dir="ltr" autocapitalize="off"></div><div><label class="l" for="np">الرمز المبدئي</label><input id="np" dir="ltr"></div></div><div class="row2"><div><label class="l" for="nn">الاسم الظاهر</label><input id="nn"></div><div><label class="l" for="nr">الصلاحيات (الدور)</label><select id="nr">'+opts('writer')+'</select></div></div><div><label class="l" for="nt">الصفة المعروضة <span class="hint">(اختياري، مثل: مدير)</span></label><input id="nt"></div><div class="bar"><button class="go" data-act="addp">إضافة</button><span class="msg" id="pm" role="status"></span></div></div>'+
-  '<div class="card"><h2>استيراد البيانات الأولية</h2><p class="hint">مرة واحدة: ينقل قائمة التصوير والإحصائيات من الموقع القديم.</p><div class="bar"><button class="go" data-act="seed">استيراد</button><span class="msg" id="sm" role="status"></span></div></div>'+
+  '<div class="card"><h2>استيراد البيانات الأولية</h2><p class="hint">ينقل الإحصائيات والقوائم والإعدادات من الملف المرفق. يمكن تكراره بأمان.</p><div class="bar"><button class="go" data-act="seed">استيراد</button><span class="msg" id="sm" role="status"></span></div></div>'+
   '<h2>الأشخاص ('+S.people.length+')</h2><div class="feed">'+S.people.map(p=>'<div class="item"><div class="top2"><span class="pn">'+esc(p.name)+'</span><span class="tag '+(p.active?'':'warn')+'">'+(p.active?esc(p.title||ROLES[p.role]):'موقوف')+'</span></div><div class="hint" dir="ltr" style="text-align:right">'+esc(p.username)+(p.must_change?' · لم يغيّر رمزه بعد':'')+'</div>'+
   '<div class="row2"><div><label class="l" for="en_'+p.id+'">الاسم</label><input id="en_'+p.id+'" value="'+esc(p.name)+'"></div><div><label class="l" for="er_'+p.id+'">الصلاحيات (الدور)</label><select id="er_'+p.id+'">'+opts(p.role)+'</select></div></div><div><label class="l" for="et_'+p.id+'">الصفة المعروضة</label><input id="et_'+p.id+'" value="'+esc(p.title||'')+'"></div>'+
   '<label class="hint"><input type="checkbox" style="width:auto;min-height:0" id="eo_'+p.id+'"'+(p.outputs?' checked':'')+'> يكتب مخرجات الاجتماعات</label><label class="hint"><input type="checkbox" style="width:auto;min-height:0" id="ea_'+p.id+'"'+(p.active?' checked':'')+'> الحساب فعّال</label>'+
   '<div class="row2"><div><input id="ep_'+p.id+'" dir="ltr" placeholder="رمز جديد (اختياري)"></div><div class="acts"><button data-act="savep" data-id="'+p.id+'">حفظ</button></div></div><span class="msg" id="em_'+p.id+'" role="status"></span></div>').join('')+'</div>'
 }
+/* ---------- actions ---------- */
+const val=id=>($(id)||{}).value||'';
+const ok=async r=>{if(r&&r.error)throw r.error;return r};
 const ACT={
   logout,
-  info(d){S.open=S.open||{};S.open[d.k]=!S.open[d.k];render()},
-  issue(d){S.cur=d.v;render()},
-  async shot(d){const {error}=await sb.from('shot').upsert({key:d.k,date:d.d,proj:d.p,by_id:S.me.id,by_name:S.me.name,at:new Date().toISOString()});if(error)return alert(errAr(error));await loadAll();render()},
-  async unshot(d){const {error}=await sb.from('shot').delete().eq('key',d.k);if(error)return alert(errAr(error));await loadAll();render()},
-  async addp(){const u=$('#nu').value.trim(),p=$('#np').value,n=$('#nn').value.trim();if(!u||!p||!n)return say('#pm','املأ كل الخانات','err');
-    const {error}=await sb.rpc('create_staff',{p_username:u,p_password:p,p_name:n,p_role:$('#nr').value,p_title:$('#nt').value.trim()||null});if(error)return say('#pm',errAr(error),'err');await loadAll();render()},
-  async savep(d){const id=d.id;const e=await sb.rpc('update_staff',{p_id:id,p_name:$('#en_'+id).value.trim(),p_role:$('#er_'+id).value,p_active:$('#ea_'+id).checked,p_outputs:$('#eo_'+id).checked,p_title:$('#et_'+id).value.trim()||null});
-    if(e.error)return say('#em_'+id,errAr(e.error),'err');const pw=$('#ep_'+id).value;if(pw){const r=await sb.rpc('set_staff_password',{p_id:id,p_password:pw});if(r.error)return say('#em_'+id,errAr(r.error),'err')}
-    await loadAll();render();say('#em_'+id,'تم الحفظ','ok')},
-  async seed(){say('#sm','جارٍ الاستيراد…');try{const j=await (await fetch('seed.json')).json();
-    const c=Object.keys(j.config).map(k=>({key:k,value:j.config[k]}));let r=await sb.from('config').upsert(c);if(r.error)throw r.error;
-    const l=Object.keys(j.lists).map(k=>({date:k,data:j.lists[k]}));r=await sb.from('lists').upsert(l);if(r.error)throw r.error;say('#sm','تم الاستيراد','ok');await loadAll()}catch(e){say('#sm',errAr(e),'err')}}
+  info(d){S.open[d.k]=!S.open[d.k];render()},issue(d){S.cur=d.v;render()},pg(d){S.pg=d.v;render()},pgi(d){S.pgi=+d.i;render()},pt(d){S.pt=d.v;render()},pk(d){S.F.pk=d.v;render()},rk(d){S.F.rk=d.v;render()},ik(d){S.F.ik=d.v;render()},
+  async shot(d){try{await ok(await sb.from('shot').upsert({key:d.k,date:d.d,proj:d.p,by_id:S.me.id,by_name:S.me.name,at:new Date().toISOString()}));await refresh()}catch(e){alert(errAr(e))}},
+  async unshot(d){try{await ok(await sb.from('shot').delete().eq('key',d.k));await refresh()}catch(e){alert(errAr(e))}},
+  async addmeet(){const t=val('#mt').trim()||'اجتماع',dd=val('#md'),h=val('#mh');if(!dd||!h)return say('#mm','اختر اليوم والساعة','err');const at=Date.parse(dd+'T'+h+':00+02:00');if(at<Date.now())return say('#mm','الموعد في الماضي','err');
+    try{await ok(await sb.from('meetings').insert({title:t,at,place:val('#mp').trim()||null,by_name:S.me.name}));await refresh()}catch(e){say('#mm',errAr(e),'err')}},
+  async cancelmeet(d){if(!confirm('إلغاء الاجتماع؟'))return;try{await ok(await sb.from('meetings').update({status:'canceled',canceled_by_name:S.me.name,canceled_at:Date.now()}).eq('id',d.id));await refresh()}catch(e){alert(errAr(e))}},
+  async delmeet(d){if(!confirm('حذف الاجتماع نهائياً؟'))return;try{await ok(await sb.from('meetings').delete().eq('id',d.id));await refresh()}catch(e){alert(errAr(e))}},
+  async addnote(d){const t=val('#on_'+d.id).trim();if(!t)return;try{await ok(await sb.from('meeting_notes').insert({meeting_id:d.id,text:t,by_id:S.me.id,by_name:S.me.name}));await refresh()}catch(e){alert(errAr(e))}},
+  async delnote(d,t,e){e.preventDefault();try{await ok(await sb.from('meeting_notes').delete().eq('id',d.id));await refresh()}catch(x){alert(errAr(x))}},
+  ics(d){const m=S.meetings.find(x=>x.id===d.id);const b=new Blob([icsFor(m)],{type:'text/calendar'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='meeting.ics';document.body.appendChild(a);a.click();a.remove()},
+  async addocc(){const t=val('#ot').trim(),dt=val('#od');if(!t||!dt)return say('#om','اكتب المناسبة والتاريخ','err');try{await ok(await sb.from('occasions').insert({title:t,date:dt}));await refresh()}catch(e){say('#om',errAr(e),'err')}},
+  async delocc(d,t,e){e.preventDefault();try{await ok(await sb.from('occasions').delete().eq('id',d.id));await refresh()}catch(x){alert(errAr(x))}},
+  async addswap(){const en=myEntry();if(!$('#sok').checked)return say('#swm','أكّد اتفاقك مع الكاتب الآخر','err');try{await ok(await sb.from('swaps').insert({date:val('#sd'),from_name:en.name,with_name:val('#sw'),by_id:S.me.id}));await refresh()}catch(e){say('#swm',errAr(e),'err')}},
+  async delswap(d,t,e){e.preventDefault();try{await ok(await sb.from('swaps').delete().eq('id',d.id));await refresh()}catch(x){alert(errAr(x))}},
+  async adddev(){const n=val('#dn').trim(),u=val('#du').trim();if(!n||!/^https:\/\//.test(u))return say('#dm','الاسم ورابط يبدأ بـ https://','err');try{let img=null;const f=$('#di').files[0];if(f)img=(await upload(f)).url;await ok(await sb.from('devices').insert({name:n,url:u,img}));await refresh()}catch(e){say('#dm',errAr(e),'err')}},
+  async deldev(d){try{await ok(await sb.from('devices').delete().eq('id',d.id));await refresh()}catch(e){alert(errAr(e))}},
+  async addph(){const n=val('#pn').trim(),p=val('#pp').trim();if(!n||!p)return say('#phm','الاسم والهاتف مطلوبان','err');try{await ok(await sb.from('phones').insert({name:n,kind:S.F.pk||null,org:val('#po').trim()||null,phone:p,project:val('#pj').trim()||null,note:val('#px').trim()||null}));S.F.pk=null;await refresh()}catch(e){say('#phm',errAr(e),'err')}},
+  async delph(d){try{await ok(await sb.from('phones').delete().eq('id',d.id));await refresh()}catch(e){alert(errAr(e))}},
+  async addidea(){const t=val('#it').trim(),l=val('#il').trim();if(!t&&!l)return say('#im','اكتب الفكرة أو ضع رابطاً','err');if(l&&!/^https?:\/\//.test(l))return say('#im','الرابط يجب أن يبدأ بـ https://','err');
+    try{say('#im','جارٍ الإرسال…');const files=[];for(const f of $('#if').files)files.push(await upload(f));await ok(await sb.from('ideas').insert({kind:S.pt,by_name:S.me.name,text:t||null,link:l||null,files}));await refresh()}catch(e){say('#im',errAr(e),'err')}},
+  async delidea(d){try{await ok(await sb.from('ideas').delete().eq('id',d.id));await refresh()}catch(e){alert(errAr(e))}},
+  async pst(d){try{await ok(await sb.rpc('set_idea_status',{p_id:d.id,p_status:d.v,p_note:val('#pn_'+d.id)}));await refresh()}catch(e){alert(errAr(e))}},
+  async addrep(){const t=val('#rt').trim();if(!S.F.rk)return say('#rmsg','اختر النوع','err');if(!t)return say('#rmsg','اكتب التفاصيل','err');try{say('#rmsg','جارٍ الإرسال…');let media=null;const f=$('#rf').files[0];if(f)media=(await upload(f)).url;await ok(await sb.from('reports').insert({user_name:S.me.name,kind:S.F.rk,project:val('#rq').trim()||null,text:t,media}));S.F.rk=null;await refresh()}catch(e){say('#rmsg',errAr(e),'err')}},
+  async reply(d){const t=val('#rp_'+d.id).trim();if(!t)return;try{await ok(await sb.from('reports').update({reply:t,reply_at:Date.now()}).eq('id',d.id));await refresh()}catch(e){alert(errAr(e))}},
+  async delrep(d){if(!confirm('حذف البلاغ؟'))return;try{await ok(await sb.from('reports').delete().eq('id',d.id));await refresh()}catch(e){alert(errAr(e))}},
+  async addpub(){const t=val('#it2').trim();if(!S.F.ik)return say('#im2','اختر النوع','err');if(!t)return say('#im2','اكتب الفكرة','err');try{say('#im2','جارٍ النشر…');let media=null;const f=$('#if2').files[0];if(f)media=(await upload(f)).url;await ok(await sb.from('pub_ideas').insert({by_name:S.me.name,kind:S.F.ik,project:val('#iq').trim()||null,text:t,media}));S.F.ik=null;await refresh()}catch(e){say('#im2',errAr(e),'err')}},
+  async delpub(d){try{await ok(await sb.from('pub_ideas').delete().eq('id',d.id));await refresh()}catch(e){alert(errAr(e))}},
+  async addprob(){const t=val('#pt').trim();if(!t)return say('#pm','اكتب العنوان','err');const p=JSON.parse(JSON.stringify(S.cfg.problems));p.groups[S.pgi].items.push({t,d:val('#pd').trim()});try{await ok(await sb.from('config').upsert({key:'problems',value:p}));await refresh()}catch(e){say('#pm',errAr(e),'err')}},
+  async delprob(d){const p=JSON.parse(JSON.stringify(S.cfg.problems));p.groups[S.pgi].items.splice(+d.i,1);try{await ok(await sb.from('config').upsert({key:'problems',value:p}));await refresh()}catch(e){alert(errAr(e))}},
+  async addp(){const u=val('#nu').trim(),p=val('#np'),n=val('#nn').trim();if(!u||!p||!n)return say('#pm','املأ كل الخانات','err');
+    const {error}=await sb.rpc('create_staff',{p_username:u,p_password:p,p_name:n,p_role:val('#nr'),p_title:val('#nt').trim()||null});if(error)return say('#pm',errAr(error),'err');await refresh()},
+  async savep(d){const id=d.id;const e=await sb.rpc('update_staff',{p_id:id,p_name:val('#en_'+id).trim(),p_role:val('#er_'+id),p_active:$('#ea_'+id).checked,p_outputs:$('#eo_'+id).checked,p_title:val('#et_'+id).trim()||null});
+    if(e.error)return say('#em_'+id,errAr(e.error),'err');const pw=val('#ep_'+id);if(pw){const r=await sb.rpc('set_staff_password',{p_id:id,p_password:pw});if(r.error)return say('#em_'+id,errAr(r.error),'err')}
+    await refresh();say('#em_'+id,'تم الحفظ','ok')},
+  async seed(){say('#sm','جارٍ الاستيراد…');try{const j=await (await fetch('seed.json?'+Date.now())).json();
+    await ok(await sb.from('config').upsert(Object.keys(j.config).map(k=>({key:k,value:j.config[k]}))));await ok(await sb.from('lists').upsert(Object.keys(j.lists).map(k=>({date:k,data:j.lists[k]}))));say('#sm','تم الاستيراد','ok');await loadAll()}catch(e){say('#sm',errAr(e),'err')}}
 };
-document.addEventListener('click',e=>{const t=e.target.closest('[data-tab],[data-act]');if(!t)return;if(t.dataset.tab){S.tab=t.dataset.tab;render();return}const f=ACT[t.dataset.act];if(f)f(t.dataset,t,e)});
+document.addEventListener('click',e=>{const t=e.target.closest('[data-tab],[data-act]');if(!t)return;if(t.dataset.tab){S.tab=t.dataset.tab;render();return}const f=ACT[t.dataset.act];if(f){if(t.tagName==='A')e.preventDefault();f(t.dataset,t,e)}});
 boot();
 </script></body></html>

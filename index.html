@@ -129,7 +129,7 @@ header.top{padding-bottom:14px}
 .dot{position:absolute;bottom:0;left:0;width:14px;height:14px;border-radius:50%;background:#B8C4C0;border:2px solid #fff}.dot.on{background:#2DBE60;box-shadow:0 0 0 0 #2DBE6088;animation:dpulse 1.8s infinite}@keyframes dpulse{70%{box-shadow:0 0 0 8px #2DBE6000}100%{box-shadow:0 0 0 0 #2DBE6000}}
 .exr{display:flex;gap:8px;margin:12px 0}.exr .go{flex:1}.onlyprint{display:none}.wkt{width:100%;border-collapse:collapse;text-align:center;font-size:.85rem}.wkt th,.wkt td{padding:6px 4px;border-bottom:1px solid var(--line)}.wkt th{background:#EEF5F2}
 @media print{body.printone main>*:not(.psel):not(.onlyprint){display:none!important}header.top,#drw,.no-print,.burger,.tg,.exr{display:none!important}.onlyprint{display:block!important}body{background:#fff!important}.pp,.card,.pk div{box-shadow:none!important;border:1px solid #ccc}}
-.idl{margin-top:8px;background:#F7FAF8;border-radius:10px;padding:6px 10px}.idl summary{cursor:pointer;font-weight:700}.idl ul{padding-right:18px;margin:6px 0;line-height:1.8}.exs{margin:10px 0 0}.exs .go{min-height:38px;padding:4px 10px;font-size:.85rem}</style></head><body>
+.idl{margin-top:8px;background:#F7FAF8;border-radius:10px;padding:6px 10px}.idl summary{cursor:pointer;font-weight:700}.idl ul{padding-right:18px;margin:6px 0;line-height:1.8}.exs{margin:10px 0 0}.exs .go{min-height:38px;padding:4px 10px;font-size:.85rem}.hs2{display:flex;height:100%;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;-webkit-overflow-scrolling:touch}.hs2::-webkit-scrollbar{display:none}.hs2 .hsl{flex:0 0 100%;scroll-snap-align:start}.hdots i{transition:all .3s}.hdots i.on{opacity:1;width:18px}</style></head><body>
 <div id="modal"></div><div class="toast" id="toast"></div>
 <div id="app"><p class="empty" style="margin-top:30px">جارٍ التحميل…</p></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
@@ -654,19 +654,37 @@ const TABIC={team:'ppl',prod:'chart',gd:'info',cp:'pin',home:'home',lists:'cam',
 const hi=k=>'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">'+HICO[k]+'</svg>';
 const MYTABS={owner:['lists','upd','gfx','stats','pid','prog','ppl','meet'],exec:['lists','upd','gfx','stats','prog','meet','pid'],ops:['gfx','upd','prog','meet'],writer:['gfx','pid','upd','meet'],filming:['lists','upd','prog','pid'],photographer:['lists','upd','prog','meet'],follower:['upd','lists','prog','meet'],helper:['upd','lists','prog','meet'],editing:['pid','prog','upd','meet']};
 const SSC={'افتتاح قريب':['#F2B21A','#1E7B8C','#0B3E52','bridge'],'اكتمل البناء':['#F2B21A','#D98A2B','#6B3A12','tower'],'تم الافتتاح':['#7FD49A','#2F9E6E','#124D3F','bridge'],'وتيرة متسارعة':['#7FD49A','#2F9E6E','#124D3F','road'],'عاد للعمل':['#7FD49A','#4A7FD0','#1B2E63','road'],'توقف العمل':['#F0A595','#A23B2A','#4A1810','road'],'شيء مهم في الموقع':['#F2B21A','#7A6BD0','#2E2563','tower']};
-function hScene(a,b,k){const br='<path d="M0 150 Q107 70 215 150 T430 150" fill="none" stroke="rgba(255,255,255,.35)" stroke-width="7"/><path d="M0 160H430" stroke="rgba(255,255,255,.3)" stroke-width="10"/>',rd='<path d="M-20 200 L170 70 H260 L450 200Z" fill="rgba(255,255,255,.14)"/><path d="M215 70V200" stroke="rgba(255,255,255,.4)" stroke-width="4" stroke-dasharray="14 12"/>',tw='<g fill="rgba(255,255,255,.2)"><rect x="250" y="40" width="46" height="160"/><rect x="305" y="80" width="36" height="120"/><rect x="200" y="100" width="40" height="100"/></g>';
-  return '<svg viewBox="0 0 430 200" preserveAspectRatio="xMidYMid slice"><defs><linearGradient id="hg'+k+a.slice(1)+b.slice(1)+'" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="'+a+'"/><stop offset="1" stop-color="'+b+'"/></linearGradient></defs><rect width="430" height="200" fill="url(#hg'+k+a.slice(1)+b.slice(1)+')"/><circle cx="360" cy="46" r="26" fill="rgba(255,255,255,.22)"/>'+(k==='bridge'?br:k==='road'?rd:tw)+'</svg>'}
+const PK=[[/كوبري|جسر/,'bridge','🌉'],[/فندق|فندقي/,'hotel','🏨'],[/مدرسة|مدارس|جامعة|كلية|معهد/,'school','🏫'],[/مستشفى|صرح طبي|عيادات|مصحة/,'hospital','🏥'],[/مطار/,'airport','✈️'],[/ميناء|مرفأ/,'port','⚓'],[/مياه|خزان|معالجة|صرف|تصريف/,'water','💧'],[/مساكن|إسكان|شقق/,'house','🏘️'],[/طريق|الدائري|تقاطع|نفق/,'road','🛣️']];
+const projKind=n=>{for(const [r,k,e] of PK)if(r.test(n||''))return[k,e];return['tower','🏢']};
+function hScene(a,b,k){
+  const W='rgba(255,255,255,';
+  const win=(x0,y0,cx,cy,dx,dy)=>{let o='';for(let i=0;i<cx;i++)for(let j=0;j<cy;j++)o+='<rect x="'+(x0+i*dx)+'" y="'+(y0+j*dy)+'" width="12" height="12" fill="'+W+'.55)"/>';return o};
+  const SC={
+   bridge:'<path d="M0 150 Q107 70 215 150 T430 150" fill="none" stroke="'+W+'.35)" stroke-width="7"/><path d="M0 160H430" stroke="'+W+'.3)" stroke-width="10"/>',
+   road:'<path d="M-20 200 L170 70 H260 L450 200Z" fill="'+W+'.14)"/><path d="M215 70V200" stroke="'+W+'.4)" stroke-width="4" stroke-dasharray="14 12"/>',
+   tower:'<g fill="'+W+'.2)"><rect x="250" y="40" width="46" height="160"/><rect x="305" y="80" width="36" height="120"/><rect x="200" y="100" width="40" height="100"/></g>',
+   hotel:'<g fill="'+W+'.22)"><rect x="240" y="30" width="100" height="170"/><rect x="212" y="90" width="30" height="110"/><rect x="340" y="70" width="40" height="130"/></g>'+win(252,44,4,6,24,24),
+   school:'<g fill="'+W+'.22)"><rect x="200" y="100" width="180" height="100"/><path d="M190 100L290 50L390 100Z"/></g><rect x="275" y="150" width="30" height="50" fill="'+W+'.5)"/><path d="M290 50V20" stroke="'+W+'.6)" stroke-width="3"/><path d="M290 20h26v14h-26z" fill="'+W+'.6)"/>',
+   hospital:'<rect x="210" y="60" width="170" height="140" fill="'+W+'.2)"/><path d="M280 80h30v22h22v26h-22v22h-30v-22h-22v-26h22z" fill="'+W+'.65)"/>',
+   airport:'<path d="M0 175H430" stroke="'+W+'.3)" stroke-width="10"/><path d="M205 122 L355 100 L392 66 L408 70 L388 104 L418 150 L402 154 L368 120 L330 126 L322 152 L308 152 L310 128 L238 138 Z" fill="'+W+'.6)"/>',
+   port:'<path d="M200 150h190l-20 30H220z" fill="'+W+'.5)"/><rect x="250" y="110" width="40" height="40" fill="'+W+'.3)"/><path d="M335 150V70h40M335 82l40-12" stroke="'+W+'.6)" stroke-width="5" fill="none"/><path d="M0 188q30-12 60 0t60 0 60 0 60 0 60 0 60 0 60 0 60 0" stroke="'+W+'.4)" stroke-width="4" fill="none"/>',
+   water:'<rect x="260" y="80" width="80" height="90" rx="8" fill="'+W+'.3)"/><ellipse cx="300" cy="80" rx="40" ry="10" fill="'+W+'.5)"/><path d="M272 170v30M328 170v30" stroke="'+W+'.5)" stroke-width="6"/><path d="M300 100c-14 22-14 34 0 34s14-12 0-34z" fill="'+W+'.7)"/>',
+   house:'<g fill="'+W+'.25)"><rect x="200" y="130" width="60" height="70"/><rect x="270" y="110" width="70" height="90"/><rect x="350" y="140" width="50" height="60"/></g><g fill="'+W+'.4)"><path d="M192 130l38-34 38 34z"/><path d="M262 110l43-38 43 38z"/><path d="M344 140l31-28 31 28z"/></g>'};
+  const id='hg'+k+a.slice(1)+b.slice(1);
+  return '<svg viewBox="0 0 430 200" preserveAspectRatio="xMidYMid slice"><defs><linearGradient id="'+id+'" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="'+a+'"/><stop offset="1" stop-color="'+b+'"/></linearGradient></defs><rect width="430" height="200" fill="url(#'+id+')"/><circle cx="360" cy="46" r="26" fill="'+W+'.22)"/>'+(SC[k]||SC.tower)+'</svg>'}
 const ago=t=>{const m=Math.max(1,Math.round((Date.now()-t)/60000));if(m<60)return 'منذ '+m+' دقيقة';const h=Math.round(m/60);if(h<24)return 'منذ '+h+' ساعة';const d=Math.round(h/24);return d===1?'أمس':'منذ '+d+' أيام'};
 function hSlides(){
-  const L=S.pu.slice(0,4);
+  const L=S.pu.slice(0,6);
   if(!L.length)return '<div class="hs hs-empty"><b>لا تحديثات من الميدان بعد</b><span>عندما يسجّل المتابع تحديثاً سيظهر هنا بالصورة.</span></div>';
-  const n=L.length;let css='';
-  if(n>1){const w=100/n,step=[];for(let i=0;i<n;i++){const a=i*w,b=(i+1)*w-3;step.push((a)+'%,'+(b)+'%{transform:translateX('+(i*w)+'%)}')}css='@keyframes hsl{'+step.join('')+'100%{transform:translateX(0)}}';}
-  const dots=n>1?'<div class="hdots">'+L.map((_,i)=>'<i style="animation:hd'+i+' '+(n*4)+'s infinite"></i>').join('')+'</div>':'';
-  let dk='';if(n>1)L.forEach((_,i)=>{const w=100/n;dk+='@keyframes hd'+i+'{0%,'+(i*w-0.1)+'%{opacity:.5;width:6px}'+(i*w)+'%,'+((i+1)*w-3)+'%{opacity:1;width:18px}'+((i+1)*w-2.9)+'%,100%{opacity:.5;width:6px}}'});
-  return '<style>'+css+dk+'</style><div class="hs"><div class="live"><i></i>آخر من الميدان</div><div class="htrack" style="width:'+(n*100)+'%;'+(n>1?'animation:hsl '+(n*4)+'s infinite cubic-bezier(.65,0,.35,1)':'')+'">'+L.map(u=>{const c=SSC[u.status]||SSC['شيء مهم في الموقع'];const img=u.media&&u.media.url&&(u.media.type||'').startsWith('image');
-    return '<div class="hsl" style="width:'+(100/n)+'%">'+(img?'<img alt="" src="'+esc(u.media.url)+'">':hScene(c[1],c[2],c[3]))+'<span class="hst" style="background:'+c[0]+'">'+esc(u.status)+'</span><h3>'+esc(u.project)+'</h3><p>'+esc((u.notes||[]).join(' · '))+((u.notes||[]).length?' · ':'')+esc(u.by_name||nm(u.by_id)||'')+' · '+ago(u.ts)+'</p></div>'}).join('')+'</div>'+dots+'</div>';
+  const n=L.length;
+  return '<div class="hs"><div class="live"><i></i>آخر من الميدان</div><div class="hs2" id="hs2">'+L.map(u=>{const c=SSC[u.status]||SSC['شيء مهم في الموقع'],pk=projKind(u.project),img=u.media&&u.media.url&&(u.media.type||'').startsWith('image');
+    return '<div class="hsl">'+(img?'<img alt="" src="'+esc(u.media.url)+'">':hScene(c[1],c[2],pk[0]))+'<span class="hst" style="background:'+c[0]+'">'+pk[1]+' '+esc(u.status)+'</span><h3>'+esc(u.project)+'</h3><p>'+esc((u.notes||[]).join(' · '))+((u.notes||[]).length?' · ':'')+esc(u.by_name||nm(u.by_id)||'')+' · '+ago(u.ts)+'</p></div>'}).join('')+'</div>'+(n>1?'<div class="hdots" id="hdots">'+L.map((_,i)=>'<i'+(i===0?' class="on"':'')+'></i>').join('')+'</div>':'')+'</div>';
 }
+function hsGo(i){const c=document.getElementById('hs2');if(!c)return;const k=c.children[i];if(k)k.scrollIntoView({behavior:'smooth',inline:'start',block:'nearest'})}
+function hsIdx(){const c=document.getElementById('hs2');if(!c)return 0;return Math.round(Math.abs(c.scrollLeft)/Math.max(1,c.clientWidth))}
+if(!window._hsInit){window._hsInit=1;let last=0;['touchstart','pointerdown','wheel','mousedown'].forEach(ev=>document.addEventListener(ev,e=>{if(e.target.closest&&e.target.closest('#hs2'))last=Date.now()},{passive:true}));
+  document.addEventListener('scroll',e=>{const c=e.target;if(c&&c.id==='hs2'){const d=document.getElementById('hdots');if(d){const i=hsIdx();[...d.children].forEach((x,j)=>x.classList.toggle('on',j===i))}}},true);
+  setInterval(()=>{const c=document.getElementById('hs2');if(!c||c.children.length<2||Date.now()-last<9000||document.hidden)return;hsGo((hsIdx()+1)%c.children.length)},4200)}
 function hRing(v,t,l,c){const off=t?201*(1-Math.min(1,v/t)):201;return '<div class="hr"><svg viewBox="0 0 72 72"><circle class="bg" cx="36" cy="36" r="32"/><circle class="fg" cx="36" cy="36" r="32" style="stroke:'+c+';--off:'+off+'"/></svg><div class="hn" data-n="'+v+'">'+v+'</div><small>'+l+'</small></div>'}
 function hTask(i,col,t,s,b,tab){return '<div class="ht"><div class="hic" style="background:'+col+'22;color:'+col+'">'+hi(i)+'</div><div class="hx"><b>'+esc(t)+'</b><span>'+esc(s)+'</span></div><button class="hgo" data-act="goto" data-t="'+tab+'">'+b+'</button></div>'}
 function hStats(){
@@ -841,13 +859,13 @@ Object.assign(ACT,{gdm:d=>{S.gdM=d.v;S.gdO=null;render();scrollTo(0,0)},gdf:d=>{
 /* ===== team list + last seen ===== */
 const TEAM=[['hassan','حسن مبارك'],['hamza','حمزة الغرياني'],['mohamed','محمد الغرياني'],['anas','أنس بريكة'],['hadi','الهادي شلايك'],['osama','أسامة أبوسن'],['omar','عمر فتح الله'],['sakina','سكينة الغرياني'],['maysam','ميسم السنوسي'],['motasim','معتصم أبوجناح'],['shaibani','محمد الشيباني']];
 let _seenT=0;function touchSeen(){if(!sb||!S.me||Date.now()-_seenT<45000)return;_seenT=Date.now();try{Promise.resolve(sb.rpc('touch_seen')).catch(()=>{})}catch(e){}}
-function pl(n,a,b,c,d){return n===1?'منذ '+a:n===2?'منذ '+b:n<=10?'منذ '+n+' '+c:'منذ '+n+' '+d}
-function seenTxt(ms){if(!ms)return 'لم يدخل بعد';const m=Math.max(0,Math.round((Date.now()-ms)/60000));if(m<3)return 'نشط الآن';if(m<60)return pl(m,'دقيقة','دقيقتين','دقائق','دقيقة');const h=Math.round(m/60);if(h<24)return pl(h,'ساعة','ساعتين','ساعات','ساعة');const d=Math.round(h/24);if(d<=30)return pl(d,'يوم','يومين','أيام','يوماً');return 'منذ أكثر من شهر'}
+function pl(n,a,b,c,d){return n===1?'نشط منذ '+a:n===2?'نشط منذ '+b:n<=10?'نشط منذ '+n+' '+c:'نشط منذ '+n+' '+d}
+function seenTxt(ms){if(!ms)return '';const m=Math.max(0,Math.round((Date.now()-ms)/60000));if(m<3)return 'نشط الآن';if(m<60)return pl(m,'دقيقة','دقيقتين','دقائق','دقيقة');const h=Math.round(m/60);if(h<24)return pl(h,'ساعة','ساعتين','ساعات','ساعة');const d=Math.round(h/24);if(d<=30)return pl(d,'يوم','يومين','أيام','يوماً');return 'نشط منذ أكثر من شهر'}
 function teamView(){
   const now=Date.now(),P=Object.fromEntries(S.people.map(p=>[p.username,p]));
   const me=S.me&&S.me.username;
   const rows=TEAM.map(([u,n])=>{const p=P[u],ls=u===me?now:(p&&+p.last_seen)||0,on=now-ls<180000&&ls>0;
-    return '<div class="tm"><span class="tav">'+(AVT[u]?'<img alt="" src="'+AVT[u]+'">':'<b>'+esc(n.charAt(0))+'</b>')+'<i class="dot'+(on?' on':'')+'"></i></span><div><b>'+esc(n)+'</b><small class="'+(on?'ok':'')+'">'+(p?esc(seenTxt(ls)):'لم يدخل بعد')+'</small></div></div>'}).join('');
+    return '<div class="tm"><span class="tav">'+(AVT[u]?'<img alt="" src="'+AVT[u]+'">':'<b>'+esc(n.charAt(0))+'</b>')+'<i class="dot'+(on?' on':'')+'"></i></span><div><b>'+esc(n)+'</b><small class="'+(on?'ok':'')+'">'+(p?esc(seenTxt(ls)):'')+'</small></div></div>'}).join('');
   return '<div class="card"><h2>أعضاء الفريق</h2><p class="hint">النقطة الخضراء تعني أنه موجود الآن في الموقع.</p></div><div class="feed">'+rows+'</div>';
 }
 
@@ -865,7 +883,7 @@ function pStat(u,r){
   const sent=gi.filter(x=>ins(+x.submitted_at)),ok=gi.filter(x=>ins(+x.approved_at)),pb=gi.filter(x=>ins(+x.published_at)),
     id=(S.ideas||[]).filter(x=>x.by_id===u.id&&ins(+x.ts)),shot=Object.values(S.shot).filter(x=>x.by_id===u.id&&ins(Date.parse(x.at)));
   const projs=new Set(pu.map(x=>x.project)).size,img=pu.filter(x=>x.media&&x.media.url).length;
-  return{u,sent:sent.length,ok:ok.length,pb:pb.length,id:id.length,pu:pu.length,img,projs,shot:shot.length,tot:sent.length+id.length+pu.length+shot.length,lists:{sent,ok,pb,id,pu}};
+  return{u,idp:id.filter(x=>x.kind==='prog').length,idr:id.filter(x=>x.kind==='reel').length,sent:sent.length,ok:ok.length,pb:pb.length,id:id.length,pu:pu.length,img,projs,shot:shot.length,tot:sent.length+id.length+pu.length+shot.length,lists:{sent,ok,pb,id,pu}};
 }
 const ymdL=ms=>{const t=lt(ms);return t.getUTCFullYear()+'-'+String(t.getUTCMonth()+1).padStart(2,'0')+'-'+String(t.getUTCDate()).padStart(2,'0')};
 const dBetween=(a,b)=>Math.round((Date.parse(b+'T00:00:00Z')-Date.parse(a+'T00:00:00Z'))/86400e3);
@@ -889,14 +907,13 @@ function prodWriters(mode){
   if(S.prP){const u=ppl.find(x=>x.id===S.prP);if(u)return prodDetail(u,mode,R0)}
   const A=ppl.map(u=>pStat(u,R0)).sort((a,b)=>b.tot-a.tot),prev=ppl.reduce((a,u)=>a+pStat(u,R1).tot,0),tot=A.reduce((a,x)=>a+x.tot,0),mx=Math.max(1,...A.map(x=>x.tot));
   const ch=prev?Math.round((tot-prev)*100/prev):null,lab=mode==='w'?'الأسبوع':'الشهر';
-  const WH=['الاسم','الدور','مقترح مُرسل','معتمد','منشور','أفكار برامج','تحديثات مشاريع','مشاريع مختلفة'],per={},wr=x=>[x.u.name,x.u.role==='writer'?'كاتب':'متابع',x.sent,x.ok,x.pb,x.id,x.pu,x.projs],pt=(mode==='w'?'أسبوع':'شهر');A.forEach(x=>per[x.u.id]={title:'إنتاجية '+x.u.name+' - '+pt,rows:[WH,wr(x)]});
+  const WH=['الاسم','الدور','مقترح مُرسل','معتمد','منشور','أفكار برامج','أفكار ريل','تحديثات متابعة المشاريع','مشاريع مختلفة'],per={},wr=x=>[x.u.name,x.u.role==='writer'?'كاتب':'متابع',x.sent,x.ok,x.pb,x.idp,x.idr,x.pu,x.projs],pt=(mode==='w'?'أسبوع':'شهر');A.forEach(x=>per[x.u.id]={title:'إنتاجية '+x.u.name+' - '+pt,rows:[WH,wr(x)]});
   S.exp={title:'إنتاجية الكتّاب - '+pt,rows:[WH].concat(A.map(wr)),per};
   return prodBack('كتّاب المحتوى')+PTITLE+prodTop(mode)+
   '<div class="psm"><div><strong>'+tot+'</strong>عملاً مسجّلاً</div><div><strong>'+(ch==null?'—':(ch>0?'+':'')+ch+'%')+'</strong>عن '+lab+' الماضي</div></div>'+
   '<p class="hint">يُحسب ما سُجّل داخل المنصة فقط. العمل خارجها لا يظهر.</p>'+
   (A.length?A.map(x=>{const w=x.u.role==='writer';return '<div class="pp" data-act="prp" data-v="'+x.u.id+'" data-pid="'+x.u.id+'"><div class="top2"><b>'+esc(x.u.name)+'</b><span class="hint">'+(w?'كاتب':'متابع')+'</span></div><div class="pk">'+
-   (w?'<div><strong>'+x.sent+'</strong><span>مقترح مُرسل</span></div><div><strong>'+x.ok+'</strong><span>معتمد</span></div><div><strong>'+x.id+'</strong><span>أفكار برامج</span></div>':'<div><strong>'+x.pu+'</strong><span>تحديث مشروع</span></div><div><strong>'+x.projs+'</strong><span>مشروعاً مختلفاً</span></div><div><strong>'+x.id+'</strong><span>أفكار برامج</span></div>')+
-   '</div><div class="pbar"><i style="width:'+Math.round(x.tot*100/mx)+'%"></i></div>'+EXP(x.u.id)+'</div>'}).join(''):'<div class="empty">لا كتّاب أو متابعين بعد.</div>')+EXR;
+   (w?'<div><strong>'+x.sent+'</strong><span>مقترح مُرسل</span></div><div><strong>'+x.ok+'</strong><span>معتمد</span></div><div><strong>'+x.pb+'</strong><span>منشور</span></div>':'<div><strong>'+x.pu+'</strong><span>تحديث مشروع</span></div><div><strong>'+x.img+'</strong><span>بصور</span></div><div><strong>'+x.projs+'</strong><span>مشروعاً مختلفاً</span></div>')+'</div><div class="pk"><div><strong>'+x.idp+'</strong><span>أفكار برامج</span></div><div><strong>'+x.idr+'</strong><span>أفكار ريل</span></div><div><strong>'+(w?x.pu:x.id)+'</strong><span>'+(w?'تحديثات متابعة المشاريع':'أفكار (المجموع)')+'</span></div></div><div class="pbar"><i style="width:'+Math.round(x.tot*100/mx)+'%"></i></div>'+EXP(x.u.id)+'</div>'}).join(''):'<div class="empty">لا كتّاب أو متابعين بعد.</div>')+EXR;
 }
 function prodDetail(u,mode,R0){
   const x=pStat(u,R0),w=u.role==='writer',lab=mode==='w'?'هذا الأسبوع':'هذا الشهر';
@@ -904,7 +921,7 @@ function prodDetail(u,mode,R0){
   const feed=[];x.lists.sent.forEach(i=>feed.push([+i.submitted_at,'اقترح «'+(i.template||i.project||'مقترح')+'»'+(i.status?' ← '+({approved:'معتمد',rejected:'مرفوض',published:'منشور',needs_edit:'مطلوب تعديل'}[i.status]||i.status):'')]));
   x.lists.pu.forEach(i=>feed.push([+i.ts,'تحديث: '+i.project+' · '+i.status]));x.lists.id.forEach(i=>feed.push([+i.ts,'فكرة '+(i.kind==='reel'?'ريل':'برنامج')+': '+String(i.text||'').slice(0,40)]));
   feed.sort((a,b)=>b[0]-a[0]);
-  const kp=w?[['مقترح مُرسل',x.sent],['معتمد',x.ok],['منشور',x.pb]]:[['تحديث مشروع',x.pu],['بصور',x.img],['مشروعاً مختلفاً',x.projs]];
+  const kp=(w?[['مقترح مُرسل',x.sent],['معتمد',x.ok],['منشور',x.pb]]:[['تحديث مشروع',x.pu],['بصور',x.img],['مشروعاً مختلفاً',x.projs]]).concat([['أفكار برامج',x.idp],['أفكار ريل',x.idr],['تحديثات متابعة المشاريع',x.pu]]);
   S.exp={title:'إنتاجية '+u.name,rows:[['النشاط','التاريخ']].concat(feed.map(f=>[f[1],fdt(f[0])]))};
   return '<div class="card no-print"><button class="chip" data-act="prp" data-v="">→ كل الكتّاب</button><h2>'+esc(u.name)+' · '+lab+'</h2></div>'+PTITLE+'<div class="pk pk3">'+kp.map(k=>'<div><strong>'+k[1]+'</strong><span>'+k[0]+'</span></div>').join('')+'</div>'+
   '<div class="card"><h2>آخر 4 '+(mode==='w'?'أسابيع':'أشهر')+'</h2><div class="pch">'+bars.map(z=>'<div><i style="height:'+Math.round(z.t*100/mx)+'%"></i><b>'+z.t+'</b><span>'+(z.b===0?'الحالي':'−'+z.b)+'</span></div>').join('')+'</div></div>'+

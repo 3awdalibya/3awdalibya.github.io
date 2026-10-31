@@ -147,7 +147,7 @@ const LINKS=[{t:'الجرافيك القديم (أرشيف)',d:'البيانات
 const mail=u=>String(u).trim().toLowerCase()+'@3awda.app';
 const say=(id,t,c)=>{const m=$(id);if(m){m.textContent=t;m.className='msg '+(c||'')}};
 const errAr=e=>{const m=(e&&e.message)||'';if(/Invalid login/i.test(m))return 'اسم المستخدم أو الرمز غير صحيح';if(/banned/i.test(m))return 'الحساب موقوف';if(/same password/i.test(m))return 'اختر رمزاً مختلفاً عن الحالي';if(/row-level security/i.test(m))return 'غير مسموح لك بهذا الإجراء';return m||'حدث خطأ'};
-const R=()=>S.me.role,isMgr=()=>['owner','exec'].includes(R()),canOut=()=>isMgr()||R()==='ops'||!!S.me.outputs,canSeeIdeas=()=>['owner','exec','filming','ops','editing'].includes(R()),canIdea=()=>R()==='writer'||canSeeIdeas(),canPst=()=>['owner','exec','filming'].includes(R()),canShot=()=>['owner','filming'].includes(R());
+const R=()=>S.me.role,isMgr=()=>['owner','exec'].includes(R()),canOut=()=>isMgr()||R()==='ops'||!!S.me.outputs,canSeeIdeas=()=>['owner','exec','filming','ops','editing'].includes(R()),canIdea=()=>R()==='writer'||canSeeIdeas(),canPst=()=>['owner','exec','filming'].includes(R()),canShot=()=>['owner','filming'].includes(R())||(S.me&&S.me.username==='mohamed');
 const SHOOTR=()=>SHOOT.includes(R());
 const dkey=off=>lt(Date.now()+off*86400e3).toISOString().slice(0,10),dayD=k=>Date.parse(k+'T12:00:00+02:00'),dkey2=t=>lt(t).toISOString().slice(0,10);
 const fdate=t=>{const d=lt(t);return AR[d.getUTCMonth()]+' '+d.getUTCDate()+' · '+['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'][d.getUTCDay()]};

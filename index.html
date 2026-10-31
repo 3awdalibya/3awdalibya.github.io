@@ -129,7 +129,7 @@ header.top{padding-bottom:14px}
 .dot{position:absolute;bottom:0;left:0;width:14px;height:14px;border-radius:50%;background:#B8C4C0;border:2px solid #fff}.dot.on{background:#2DBE60;box-shadow:0 0 0 0 #2DBE6088;animation:dpulse 1.8s infinite}@keyframes dpulse{70%{box-shadow:0 0 0 8px #2DBE6000}100%{box-shadow:0 0 0 0 #2DBE6000}}
 .exr{display:flex;gap:8px;margin:12px 0}.exr .go{flex:1}.onlyprint{display:none}.wkt{width:100%;border-collapse:collapse;text-align:center;font-size:.85rem}.wkt th,.wkt td{padding:6px 4px;border-bottom:1px solid var(--line)}.wkt th{background:#EEF5F2}
 @media print{body.printone main>*:not(.psel):not(.onlyprint){display:none!important}header.top,#drw,.no-print,.burger,.tg,.exr{display:none!important}.onlyprint{display:block!important}body{background:#fff!important}.pp,.card,.pk div{box-shadow:none!important;border:1px solid #ccc}}
-.idl{margin-top:8px;background:#F7FAF8;border-radius:10px;padding:6px 10px}.idl summary{cursor:pointer;font-weight:700}.idl ul{padding-right:18px;margin:6px 0;line-height:1.8}.exs{margin:10px 0 0}.exs .go{min-height:38px;padding:4px 10px;font-size:.85rem}.hs2{display:flex;height:100%;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;-webkit-overflow-scrolling:touch}.hs2::-webkit-scrollbar{display:none}.hs2 .hsl{flex:0 0 100%;scroll-snap-align:start}.hdots i{transition:all .3s}.hdots i.on{opacity:1;width:18px}</style></head><body>
+.idl{margin-top:8px;background:#F7FAF8;border-radius:10px;padding:6px 10px}.idl summary{cursor:pointer;font-weight:700}.idl ul{padding-right:18px;margin:6px 0;line-height:1.8}.exs{margin:10px 0 0}.exs .go{min-height:38px;padding:4px 10px;font-size:.85rem}.hs2{display:flex;height:100%;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;-webkit-overflow-scrolling:touch}.hs2::-webkit-scrollbar{display:none}.hs2 .hsl{flex:0 0 100%;scroll-snap-align:start}.hdots i{transition:all .3s}.hdots i.on{opacity:1;width:18px}.stl{background:#FFF3E6;border-radius:14px;padding:10px 14px;margin-bottom:10px}.stl summary{color:#C4561A}</style></head><body>
 <div id="modal"></div><div class="toast" id="toast"></div>
 <div id="app"><p class="empty" style="margin-top:30px">جارٍ التحميل…</p></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
@@ -153,6 +153,7 @@ const LINKS=[{t:'الجرافيك القديم (أرشيف)',d:'البيانات
 const mail=u=>String(u).trim().toLowerCase()+'@3awda.app';
 const say=(id,t,c)=>{const m=$(id);if(m){m.textContent=t;m.className='msg '+(c||'')}};
 const errAr=e=>{const m=(e&&e.message)||'';if(/Invalid login/i.test(m))return 'اسم المستخدم أو الرمز غير صحيح';if(/banned/i.test(m))return 'الحساب موقوف';if(/same password/i.test(m))return 'اختر رمزاً مختلفاً عن الحالي';if(/row-level security/i.test(m))return 'غير مسموح لك بهذا الإجراء';return m||'حدث خطأ'};
+const isW=()=>!!S.me&&(S.me.role==='writer'||S.me.username==='omar');
 const R=()=>S.me.role,isMgr=()=>['owner','exec'].includes(R()),canOut=()=>isMgr()||R()==='ops'||!!S.me.outputs,canSeeIdeas=()=>['owner','exec','filming','ops','editing'].includes(R()),canIdea=()=>R()==='writer'||canSeeIdeas(),canPst=()=>['owner','exec','filming'].includes(R()),canShot=()=>['owner','filming'].includes(R())||(S.me&&S.me.username==='mohamed');
 const SHOOTR=()=>SHOOT.includes(R());
 const dkey=off=>lt(Date.now()+off*86400e3).toISOString().slice(0,10),dayD=k=>Date.parse(k+'T12:00:00+02:00'),dkey2=t=>lt(t).toISOString().slice(0,10);
@@ -201,7 +202,7 @@ const seenKey=()=>'seenIdeas_'+(S.me&&S.me.id);
 const seenIdeas=()=>{try{return+localStorage.getItem(seenKey())||0}catch(e){return 0}};
 const newIdeas=()=>canSeeIdeas()?S.ideas.filter(x=>x.by_id!==S.me.id&&x.ts>seenIdeas()):[];
 function tabBadge(k){const me=S.me.id;
-  if(k==='gfx'){if(R()==='owner')return S.gi.filter(x=>geff(x)==='review').length;if(R()==='writer')return S.gi.filter(x=>x.uid===me&&geff(x)==='needs_edit').length;return 0}
+  if(k==='gfx'){if(R()==='owner')return S.gi.filter(x=>geff(x)==='review').length;if(isW())return S.gi.filter(x=>x.uid===me&&geff(x)==='needs_edit').length;return 0}
   if(k==='pid')return newIdeas().length;
   if(k==='bal'&&R()==='owner')return S.reports.filter(x=>!x.reply).length;
   return 0}
@@ -219,7 +220,7 @@ async function loadAll(){
 function render(){
   if(!S.me)return;if(!myTabs().some(t=>t[0]===S.tab))S.tab='home';
   const tabs=orderedTabs(),lab=Object.fromEntries(tabs),tot=tabs.reduce((a,t)=>a+tabBadge(t[0]),0);
-  const V={team:teamView,prod:prodView,gd:gdView,cp:cpView,home:homeView,lists:listsView,prog:progView,meet:meetView,stats:statsView,upd:updView,pid:pidView,gfx:gView,idea:ideaView,avoid:avoidView,dev:devView,why:whyView,prob:probView,ph:phView,bal:balView,acc:accView,ppl:pplView};
+  const V={team:teamView,prod:prodView,gd:gdView,cp:cpView,home:homeView,lists:listsView,prog:progView,meet:meetView,stats:statsView,upd:()=>staleBox()+updView(),pid:pidView,gfx:gView,idea:ideaView,avoid:avoidView,dev:devView,why:whyView,prob:probView,ph:phView,bal:balView,acc:accView,ppl:pplView};
   const item=([k,l])=>{const b=tabBadge(k);return '<button class="dmi'+(S.tab===k?' on':'')+'" data-tab="'+k+'"><span class="dic">'+hi(TABIC[k]||'more')+'</span>'+esc(l)+(b?'<span class="dn">'+b+'</span>':'')+'</button>'};
   const drawer='<div id="drw"><div class="dov" data-act="menu"></div><aside class="dpanel" role="dialog" aria-label="القائمة"><div class="dme"><img src="'+(AVT[S.me.username]||ICON)+'" alt=""><div><b>'+esc(S.me.name)+'</b><small>'+esc(S.me.title||ROLES[R()])+'</small></div></div><div class="dlist">'+tabs.filter(t=>t[0]!=='acc').map(item).join('')+'</div><div class="dsep"></div><div class="dlist">'+item(['acc','حسابي'])+'<button class="dmi" data-act="logout"><span class="dic">'+hi('exit')+'</span>تسجيل الخروج</button></div></aside></div>';
   $('#app').innerHTML='<header class="top"><div class="hrow"><button class="burger" data-act="menu" aria-label="فتح القائمة">'+hi('menu')+(tot?'<span class="bd">'+tot+'</span>':'')+'</button>'+av(S.me.username,'av hav')+'<h1>'+(S.tab==='home'?'منصة عودة الحياة':esc(lab[S.tab]||''))+'<small>'+esc(S.me.name)+' · '+esc(S.me.title||ROLES[R()])+'</small></h1><div class="clk"><span id="clk">'+clockTxt()+'</span>'+FLAG+'</div></div></header><main>'+V[S.tab]()+'</main>'+drawer;
@@ -310,7 +311,7 @@ function statsView(){
   const bars='<div style="display:flex;align-items:flex-end;gap:6px;height:130px;padding-top:16px">'+mt.map(x=>'<div style="flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;height:100%"><em style="font-style:normal;font-size:.72rem;color:var(--muted)">'+x+'</em><div style="width:100%;border-radius:5px 5px 0 0;background:linear-gradient(var(--g),var(--t));min-height:2px;height:'+Math.round(x/mx*100)+'%"></div></div>').join('')+'</div><div style="display:flex;gap:6px;font-size:.72rem;color:var(--muted);text-align:center">'+st.months.map(m=>'<span style="flex:1">'+AR[+m.slice(5)-1]+'</span>').join('')+'</div>';
   const gp=Object.keys(st.gfx_periods),gmx=Math.max(...gp.map(k=>st.gfx_periods[k]),1),gtot=st.gfx_total,tp=Object.entries(st.gfx_templates).map(([k,x])=>({k,v:x}));
   const kpi=(b,s)=>'<div class="card" style="text-align:center;padding:12px"><b style="font:700 1.7rem var(--disp);color:var(--brand)">'+b+'</b><small class="hint">'+s+'</small></div>';
-  const showG=!isFilm(),gFirst=R()==='writer';
+  const showG=!isFilm(),gFirst=isW();
   const gfxHtml='<div class="card"><h2>الجرافيك حسب الفترات</h2><p class="hint">قبل أكتوبر 2026 لا توجد أرقام شهرية منفصلة، فنعرض الفترات المتاحة.</p>'+gp.map(k=>'<div><div class="top2"><span>'+esc(k)+'</span><b>'+st.gfx_periods[k]+' · '+pct(st.gfx_periods[k],gtot)+'%</b></div>'+pbar(Math.round(st.gfx_periods[k]/gmx*100))+'</div>').join('')+'</div>'+
   '<div class="card"><h2>الجرافيك حسب القالب</h2>'+donut(tp.slice(0,6).concat(tp.length>6?[{k:'أخرى',v:tp.slice(6).reduce((a,x)=>a+x.v,0)}]:[]))+'</div>';
   const vidHtml='<div class="card"><h2>أنواع الفيديو 2026 (بدون الريلز)</h2>'+donut(tot)+'</div><div class="card"><h2>الريلز مقابل الفيديو</h2>'+donut([{k:'الريلز',v:reels},{k:'الفيديو',v:longv}])+'</div>'+
@@ -428,8 +429,8 @@ const ACT={
 const GST={empty:'فارغ',draft:'مسودة',review:'قيد المراجعة',needs_edit:'يحتاج تعديل',approved:'معتمد',rejected:'مرفوض',published:'منشور',moved:'نُقلت للأسبوعية'};
 const GCL={review:'warn',needs_edit:'warn',approved:'ok',published:'ok'};
 const gpill=s=>'<span class="tag '+(GCL[s]||'')+'">'+GST[s]+'</span>';
-const canG=()=>['writer','owner','exec','ops'].includes(R());
-const gtabs=()=>R()==='owner'?[['review','المراجعة'],['weekly','مقترحاتي'],['ideas','أفكار الأسبوع'],['approved','المعتمد'],['tpl','القوالب والمشاريع']]:R()==='writer'?[['weekly','المقترحات الأسبوعية'],['ideas','أفكار خلال الأسبوع'],['notes','ملاحظاتي']]:[['board','المقترحات'],['approved','المعتمد']];
+const canG=()=>['writer','owner','exec','ops'].includes(R())||isW();
+const gtabs=()=>R()==='owner'?[['review','المراجعة'],['weekly','مقترحاتي'],['ideas','أفكار الأسبوع'],['approved','المعتمد'],['tpl','القوالب والمشاريع']]:isW()?[['weekly','المقترحات الأسبوعية'],['ideas','أفكار خلال الأسبوع'],['notes','ملاحظاتي']]:[['board','المقترحات'],['approved','المعتمد']];
 const gcy=()=>S.cfg.g_cycle||null,gtpl=()=>(S.cfg.g_templates&&S.cfg.g_templates.list)||[],gprj=()=>{const p=S.cfg.g_projects||{};return{active:p.active||[],stopped:p.stopped||[]}};
 const geff=it=>{if(!it)return'empty';if(!it.v)return'draft';if(it.state==='submitted'&&it.v>(it.for_version||0))return'review';return it.status||'review'};
 const gedit=s=>['empty','draft','needs_edit'].includes(s);
@@ -687,18 +688,22 @@ if(!window._hsInit){window._hsInit=1;let last=0;['touchstart','pointerdown','whe
   setInterval(()=>{const c=document.getElementById('hs2');if(!c||c.children.length<2||Date.now()-last<9000||document.hidden)return;hsGo((hsIdx()+1)%c.children.length)},4200)}
 function hRing(v,t,l,c){const off=t?201*(1-Math.min(1,v/t)):201;return '<div class="hr"><svg viewBox="0 0 72 72"><circle class="bg" cx="36" cy="36" r="32"/><circle class="fg" cx="36" cy="36" r="32" style="stroke:'+c+';--off:'+off+'"/></svg><div class="hn" data-n="'+v+'">'+v+'</div><small>'+l+'</small></div>'}
 function hTask(i,col,t,s,b,tab){return '<div class="ht"><div class="hic" style="background:'+col+'22;color:'+col+'">'+hi(i)+'</div><div class="hx"><b>'+esc(t)+'</b><span>'+esc(s)+'</span></div><button class="hgo" data-act="goto" data-t="'+tab+'">'+b+'</button></div>'}
+function staleProj(){const reg=(S.cfg.registry||[]).filter(r=>r.s==='جارٍ'),last={};S.pu.forEach(u=>{if(!last[u.project]||u.ts>last[u.project])last[u.project]=+u.ts});const lim=Date.now()-30*86400e3;return reg.filter(r=>!(last[r.n]>lim))}
+function staleBox(){if(!['follower','helper','tracker','owner','exec'].includes(R()))return '';const l=staleProj();if(!l.length)return '';return '<details class="idl stl"><summary>'+l.length+' مشاريع لم تُحدَّث منذ شهر</summary><ul>'+l.slice(0,60).map(r=>'<li>'+esc(r.n)+'</li>').join('')+(l.length>60?'<li>…</li>':'')+'</ul></details>'}
 function hStats(){
   const role=R(),w=Date.now()-7*86400e3,cy=gcy&&gcy(),me=S.me.id;
   const gm=S.gi.filter(x=>x.uid===me&&x.kind==='weekly'&&cy&&x.cycle===cy.id);
   const L=S.lists[0],shotN=L?Object.keys(S.shot).filter(k=>k.startsWith(L.date+'__')).length:0,totN=L?(L.data.items||[]).length+(L.data.prog||[]).length:0;
   const apr=S.gi.filter(x=>['approved','published'].includes(x.status)),pubN=apr.filter(x=>x.status==='published').length;
   const rev=S.gi.filter(x=>geff(x)==='review'),nr=S.reports.filter(x=>!x.reply).length,ni=S.ideas.filter(x=>x.kind==='prog'&&!x.status).length;
-  const rings=[],tasks=[],m=nextMeeting();
+  const rings=[],tasks=[],m=nextMeeting(),stl=staleProj();
   if(role==='writer'){const sent=gm.filter(x=>x.v).length,ok=gm.filter(x=>['approved','published'].includes(x.status)).length,ne=gm.filter(x=>geff(x)==='needs_edit');
     rings.push(hRing(sent,5,'أرسلت من 5','#0F7C93'),hRing(ok,Math.max(sent,1),'معتمد من المرسل','#4DB968'),hRing(S.pu.filter(x=>x.by_id===me&&x.ts>w).length,Math.max(3,S.pu.filter(x=>x.by_id===me&&x.ts>w).length),'تحديثاتك هذا الأسبوع','#F2B21A'));
     if(5-sent>0)tasks.push(hTask('img','#E8782A','متبقٍ لك '+(5-sent)+' مقترحات هذا الأسبوع','اكتب أو أكمل مسودة','أكمل','gfx'));
     ne.slice(0,2).forEach(x=>tasks.push(hTask('chat','#0F7C93','طلب تعديل: '+(x.template||'مقترح'),x.note_to_writer||'','عدّل','gfx')));
     const e=myEntry();if(e&&dutyOn(0).includes(e.name))tasks.push(hTask('act','#4DB968','أنت كاتب النشر الفوري اليوم','وفّقك الله','تفاصيل','home'));
+  }else if(role==='tracker'){
+    const mine=S.pu.filter(x=>x.by_id===me);rings.push(hRing(mine.filter(x=>x.ts>w).length,Math.max(5,mine.filter(x=>x.ts>w).length),'تحديثاتك هذا الأسبوع','#0F7C93'),hRing(new Set(mine.filter(x=>x.ts>Date.now()-30*86400e3).map(x=>x.project)).size,Math.max(10,stl.length),'مشاريع حدّثتها هذا الشهر','#4DB968'),hRing(stl.length,Math.max(stl.length,1),'لم تُحدَّث منذ شهر','#E8782A'));
   }else if(isFilm()||['photographer','follower','helper'].includes(role)){
     rings.push(hRing(shotN,totN,'صُوّر من القائمة','#4DB968'),hRing(Math.max(0,totN-shotN),totN,'متبقٍ','#E8782A'),hRing(S.pu.filter(x=>x.ts>w).length,Math.max(5,S.pu.filter(x=>x.ts>w).length),'تحديثات الأسبوع','#0F7C93'));
     if(L&&totN-shotN>0)tasks.push(hTask('cam','#4DB968','القائمة الجارية','بقي '+(totN-shotN)+' من '+totN,'افتح','lists'));
@@ -712,6 +717,7 @@ function hStats(){
   }
   if(m)tasks.push(hTask('cal','#4DB968',m.title,fdate(m.at)+' · '+ftime(m.at),'فتح','meet'));
   if(!tasks.length)tasks.push(hTask('ok','#4DB968','لا شيء عاجل الآن','أحسنت','','home').replace('<button class="hgo" data-act="goto" data-t="home"></button>',''));
+  if(stl.length&&['follower','helper','tracker','owner','exec'].includes(role))tasks.unshift(hTask('act','#C4561A',stl.length+' مشاريع لم تُحدَّث منذ شهر','افتح متابعة المشاريع وحدّث ما تعرفه','حدّث','upd'));
   return {rings,tasks};
 }
 function hPhotos(){
@@ -903,20 +909,20 @@ function prodView(){
   return '<div class="card"><h2>إنتاجية الفريق</h2><p class="hint">اختر القسم لتتابع إنتاجه.</p></div><button class="lq gbig" style="background:linear-gradient(135deg,#7A6BD0,#5648A8)" data-act="prs" data-v="w"><span class="cpe">✍️</span><b>كتّاب المحتوى</b><small>المقترحات والأفكار والتحديثات</small></button><button class="lq gbig" style="background:linear-gradient(135deg,#E8782A,#C4561A)" data-act="prs" data-v="f"><span class="cpe">🎥</span><b>قسم التصوير</b><small>أنس ومحمد، والمذيعون الثلاثة</small></button>';
 }
 function prodWriters(mode){
-  const R0=pPeriod(mode,0),R1=pPeriod(mode,1),ppl=S.people.filter(p=>p.active!==false&&['writer','follower'].includes(p.role));
+  const R0=pPeriod(mode,0),R1=pPeriod(mode,1),ppl=S.people.filter(p=>p.active!==false&&(['writer','follower'].includes(p.role)||p.username==='omar'));
   if(S.prP){const u=ppl.find(x=>x.id===S.prP);if(u)return prodDetail(u,mode,R0)}
   const A=ppl.map(u=>pStat(u,R0)).sort((a,b)=>b.tot-a.tot),prev=ppl.reduce((a,u)=>a+pStat(u,R1).tot,0),tot=A.reduce((a,x)=>a+x.tot,0),mx=Math.max(1,...A.map(x=>x.tot));
   const ch=prev?Math.round((tot-prev)*100/prev):null,lab=mode==='w'?'الأسبوع':'الشهر';
-  const WH=['الاسم','الدور','مقترح مُرسل','معتمد','منشور','أفكار برامج','أفكار ريل','تحديثات متابعة المشاريع','مشاريع مختلفة'],per={},wr=x=>[x.u.name,x.u.role==='writer'?'كاتب':'متابع',x.sent,x.ok,x.pb,x.idp,x.idr,x.pu,x.projs],pt=(mode==='w'?'أسبوع':'شهر');A.forEach(x=>per[x.u.id]={title:'إنتاجية '+x.u.name+' - '+pt,rows:[WH,wr(x)]});
+  const WH=['الاسم','الدور','مقترح مُرسل','معتمد','منشور','أفكار برامج','أفكار ريل','تحديثات متابعة المشاريع','مشاريع مختلفة'],per={},wr=x=>[x.u.name,(x.u.role==='writer'||x.u.username==='omar')?'كاتب':'متابع',x.sent,x.ok,x.pb,x.idp,x.idr,x.pu,x.projs],pt=(mode==='w'?'أسبوع':'شهر');A.forEach(x=>per[x.u.id]={title:'إنتاجية '+x.u.name+' - '+pt,rows:[WH,wr(x)]});
   S.exp={title:'إنتاجية الكتّاب - '+pt,rows:[WH].concat(A.map(wr)),per};
   return prodBack('كتّاب المحتوى')+PTITLE+prodTop(mode)+
   '<div class="psm"><div><strong>'+tot+'</strong>عملاً مسجّلاً</div><div><strong>'+(ch==null?'—':(ch>0?'+':'')+ch+'%')+'</strong>عن '+lab+' الماضي</div></div>'+
   '<p class="hint">يُحسب ما سُجّل داخل المنصة فقط. العمل خارجها لا يظهر.</p>'+
-  (A.length?A.map(x=>{const w=x.u.role==='writer';return '<div class="pp" data-act="prp" data-v="'+x.u.id+'" data-pid="'+x.u.id+'"><div class="top2"><b>'+esc(x.u.name)+'</b><span class="hint">'+(w?'كاتب':'متابع')+'</span></div><div class="pk">'+
+  (A.length?A.map(x=>{const w=x.u.role==='writer'||x.u.username==='omar';return '<div class="pp" data-act="prp" data-v="'+x.u.id+'" data-pid="'+x.u.id+'"><div class="top2"><b>'+esc(x.u.name)+'</b><span class="hint">'+(w?'كاتب':'متابع')+'</span></div><div class="pk">'+
    (w?'<div><strong>'+x.sent+'</strong><span>مقترح مُرسل</span></div><div><strong>'+x.ok+'</strong><span>معتمد</span></div><div><strong>'+x.pb+'</strong><span>منشور</span></div>':'<div><strong>'+x.pu+'</strong><span>تحديث مشروع</span></div><div><strong>'+x.img+'</strong><span>بصور</span></div><div><strong>'+x.projs+'</strong><span>مشروعاً مختلفاً</span></div>')+'</div><div class="pk"><div><strong>'+x.idp+'</strong><span>أفكار برامج</span></div><div><strong>'+x.idr+'</strong><span>أفكار ريل</span></div><div><strong>'+(w?x.pu:x.id)+'</strong><span>'+(w?'تحديثات متابعة المشاريع':'أفكار (المجموع)')+'</span></div></div><div class="pbar"><i style="width:'+Math.round(x.tot*100/mx)+'%"></i></div>'+EXP(x.u.id)+'</div>'}).join(''):'<div class="empty">لا كتّاب أو متابعين بعد.</div>')+EXR;
 }
 function prodDetail(u,mode,R0){
-  const x=pStat(u,R0),w=u.role==='writer',lab=mode==='w'?'هذا الأسبوع':'هذا الشهر';
+  const x=pStat(u,R0),w=u.role==='writer'||u.username==='omar',lab=mode==='w'?'هذا الأسبوع':'هذا الشهر';
   const bars=[3,2,1,0].map(b=>{const r=pPeriod(mode,b);return{b,t:pStat(u,r).tot}}),mx=Math.max(1,...bars.map(z=>z.t));
   const feed=[];x.lists.sent.forEach(i=>feed.push([+i.submitted_at,'اقترح «'+(i.template||i.project||'مقترح')+'»'+(i.status?' ← '+({approved:'معتمد',rejected:'مرفوض',published:'منشور',needs_edit:'مطلوب تعديل'}[i.status]||i.status):'')]));
   x.lists.pu.forEach(i=>feed.push([+i.ts,'تحديث: '+i.project+' · '+i.status]));x.lists.id.forEach(i=>feed.push([+i.ts,'فكرة '+(i.kind==='reel'?'ريل':'برنامج')+': '+String(i.text||'').slice(0,40)]));

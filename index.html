@@ -128,8 +128,8 @@ header.top{padding-bottom:14px}
 .tav{position:relative;width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,#4DB968,#0F7C93);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;flex:none}.tav img{width:100%;height:100%;border-radius:50%;object-fit:cover}.tav b{color:#fff}
 .dot{position:absolute;bottom:0;left:0;width:14px;height:14px;border-radius:50%;background:#B8C4C0;border:2px solid #fff}.dot.on{background:#2DBE60;box-shadow:0 0 0 0 #2DBE6088;animation:dpulse 1.8s infinite}@keyframes dpulse{70%{box-shadow:0 0 0 8px #2DBE6000}100%{box-shadow:0 0 0 0 #2DBE6000}}
 .exr{display:flex;gap:8px;margin:12px 0}.exr .go{flex:1}.onlyprint{display:none}.wkt{width:100%;border-collapse:collapse;text-align:center;font-size:.85rem}.wkt th,.wkt td{padding:6px 4px;border-bottom:1px solid var(--line)}.wkt th{background:#EEF5F2}
-@media print{header.top,#drw,.no-print,.burger,.tg,.exr{display:none!important}.onlyprint{display:block!important}body{background:#fff!important}.pp,.card,.pk div{box-shadow:none!important;border:1px solid #ccc}}
-</style></head><body>
+@media print{body.printone main>*:not(.psel):not(.onlyprint){display:none!important}header.top,#drw,.no-print,.burger,.tg,.exr{display:none!important}.onlyprint{display:block!important}body{background:#fff!important}.pp,.card,.pk div{box-shadow:none!important;border:1px solid #ccc}}
+.idl{margin-top:8px;background:#F7FAF8;border-radius:10px;padding:6px 10px}.idl summary{cursor:pointer;font-weight:700}.idl ul{padding-right:18px;margin:6px 0;line-height:1.8}.exs{margin:10px 0 0}.exs .go{min-height:38px;padding:4px 10px;font-size:.85rem}</style></head><body>
 <div id="modal"></div><div class="toast" id="toast"></div>
 <div id="app"><p class="empty" style="margin-top:30px">جارٍ التحميل…</p></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
@@ -839,9 +839,10 @@ Object.assign(ACT,{gdm:d=>{S.gdM=d.v;S.gdO=null;render();scrollTo(0,0)},gdf:d=>{
 
 
 /* ===== team list + last seen ===== */
-const TEAM=[['hassan','حسن مبارك'],['hamza','حمزة الغرياني'],['mohamed','محمد الغرياني'],['anas','أنس بريكة'],['hadi','الهادي شلايك'],['osama','أسامة أبوسن'],['omar','عمر فتح الله'],['sakina','سكينة الغرياني'],['maysam','ميسم السنوسي'],['shaibani','محمد الشيباني']];
+const TEAM=[['hassan','حسن مبارك'],['hamza','حمزة الغرياني'],['mohamed','محمد الغرياني'],['anas','أنس بريكة'],['hadi','الهادي شلايك'],['osama','أسامة أبوسن'],['omar','عمر فتح الله'],['sakina','سكينة الغرياني'],['maysam','ميسم السنوسي'],['motasim','معتصم أبوجناح'],['shaibani','محمد الشيباني']];
 let _seenT=0;function touchSeen(){if(!sb||!S.me||Date.now()-_seenT<45000)return;_seenT=Date.now();try{Promise.resolve(sb.rpc('touch_seen')).catch(()=>{})}catch(e){}}
-function seenTxt(ms){if(!ms)return 'لم يدخل بعد';const m=Math.round((Date.now()-ms)/60000);if(m<3)return 'نشط الآن';if(m<60)return 'آخر ظهور: منذ '+m+' دقيقة';const t=lt(ms),tn=lt(Date.now()),sameDay=t.getUTCDate()===tn.getUTCDate()&&t.getUTCMonth()===tn.getUTCMonth();const hh=t.getUTCHours(),mm=String(t.getUTCMinutes()).padStart(2,'0'),ap=hh>=12?'م':'ص',h12=hh%12||12;const tm=h12+':'+mm+' '+ap;if(sameDay)return 'آخر ظهور: اليوم '+tm;const y=lt(Date.now()-86400e3);if(t.getUTCDate()===y.getUTCDate()&&t.getUTCMonth()===y.getUTCMonth())return 'آخر ظهور: أمس '+tm;return 'آخر ظهور: '+t.getUTCDate()+'/'+(t.getUTCMonth()+1)+' '+tm}
+function pl(n,a,b,c,d){return n===1?'منذ '+a:n===2?'منذ '+b:n<=10?'منذ '+n+' '+c:'منذ '+n+' '+d}
+function seenTxt(ms){if(!ms)return 'لم يدخل بعد';const m=Math.max(0,Math.round((Date.now()-ms)/60000));if(m<3)return 'نشط الآن';if(m<60)return pl(m,'دقيقة','دقيقتين','دقائق','دقيقة');const h=Math.round(m/60);if(h<24)return pl(h,'ساعة','ساعتين','ساعات','ساعة');const d=Math.round(h/24);if(d<=30)return pl(d,'يوم','يومين','أيام','يوماً');return 'منذ أكثر من شهر'}
 function teamView(){
   const now=Date.now(),P=Object.fromEntries(S.people.map(p=>[p.username,p]));
   const me=S.me&&S.me.username;
@@ -868,7 +869,8 @@ function pStat(u,r){
 }
 const ymdL=ms=>{const t=lt(ms);return t.getUTCFullYear()+'-'+String(t.getUTCMonth()+1).padStart(2,'0')+'-'+String(t.getUTCDate()).padStart(2,'0')};
 const dBetween=(a,b)=>Math.round((Date.parse(b+'T00:00:00Z')-Date.parse(a+'T00:00:00Z'))/86400e3);
-const EXR='<div class="exr no-print"><button class="go" data-act="xl">⬇ Excel</button><button class="go" data-act="pr">🖨 PDF / طباعة</button></div>';
+const EXR='<div class="exr no-print"><button class="go" data-act="xl">⬇ Excel (الكل)</button><button class="go" data-act="pr">🖨 PDF (الكل)</button></div>';
+const EXP=id=>'<div class="exr exs no-print"><button class="go sm" data-act="xl" data-id="'+id+'">⬇ Excel</button><button class="go sm" data-act="pr" data-id="'+id+'">🖨 PDF</button></div>';
 const PTITLE='<div class="onlyprint"><h2>منصة عودة الحياة · إنتاجية الفريق</h2></div>';
 function prodTop(mode){return '<div class="tg no-print">'+[['w','هذا الأسبوع'],['m','هذا الشهر']].map(([k,t])=>'<button class="'+(mode===k?'on':'')+'" data-act="prm" data-v="'+k+'">'+t+'</button>').join('')+'</div>'}
 function prodBack(t){return '<div class="card no-print"><button class="chip" data-act="prs" data-v="">→ الإنتاجية</button><h2>'+t+'</h2></div>'}
@@ -887,13 +889,14 @@ function prodWriters(mode){
   if(S.prP){const u=ppl.find(x=>x.id===S.prP);if(u)return prodDetail(u,mode,R0)}
   const A=ppl.map(u=>pStat(u,R0)).sort((a,b)=>b.tot-a.tot),prev=ppl.reduce((a,u)=>a+pStat(u,R1).tot,0),tot=A.reduce((a,x)=>a+x.tot,0),mx=Math.max(1,...A.map(x=>x.tot));
   const ch=prev?Math.round((tot-prev)*100/prev):null,lab=mode==='w'?'الأسبوع':'الشهر';
-  S.exp={title:'إنتاجية الكتّاب - '+(mode==='w'?'أسبوع':'شهر'),rows:[['الاسم','الدور','مقترح مُرسل','معتمد','منشور','أفكار برامج','تحديثات مشاريع','مشاريع مختلفة']].concat(A.map(x=>[x.u.name,x.u.role==='writer'?'كاتب':'متابع',x.sent,x.ok,x.pb,x.id,x.pu,x.projs]))};
+  const WH=['الاسم','الدور','مقترح مُرسل','معتمد','منشور','أفكار برامج','تحديثات مشاريع','مشاريع مختلفة'],per={},wr=x=>[x.u.name,x.u.role==='writer'?'كاتب':'متابع',x.sent,x.ok,x.pb,x.id,x.pu,x.projs],pt=(mode==='w'?'أسبوع':'شهر');A.forEach(x=>per[x.u.id]={title:'إنتاجية '+x.u.name+' - '+pt,rows:[WH,wr(x)]});
+  S.exp={title:'إنتاجية الكتّاب - '+pt,rows:[WH].concat(A.map(wr)),per};
   return prodBack('كتّاب المحتوى')+PTITLE+prodTop(mode)+
   '<div class="psm"><div><strong>'+tot+'</strong>عملاً مسجّلاً</div><div><strong>'+(ch==null?'—':(ch>0?'+':'')+ch+'%')+'</strong>عن '+lab+' الماضي</div></div>'+
   '<p class="hint">يُحسب ما سُجّل داخل المنصة فقط. العمل خارجها لا يظهر.</p>'+
-  (A.length?A.map(x=>{const w=x.u.role==='writer';return '<button class="pp" data-act="prp" data-v="'+x.u.id+'"><div class="top2"><b>'+esc(x.u.name)+'</b><span class="hint">'+(w?'كاتب':'متابع')+'</span></div><div class="pk">'+
+  (A.length?A.map(x=>{const w=x.u.role==='writer';return '<div class="pp" data-act="prp" data-v="'+x.u.id+'" data-pid="'+x.u.id+'"><div class="top2"><b>'+esc(x.u.name)+'</b><span class="hint">'+(w?'كاتب':'متابع')+'</span></div><div class="pk">'+
    (w?'<div><strong>'+x.sent+'</strong><span>مقترح مُرسل</span></div><div><strong>'+x.ok+'</strong><span>معتمد</span></div><div><strong>'+x.id+'</strong><span>أفكار برامج</span></div>':'<div><strong>'+x.pu+'</strong><span>تحديث مشروع</span></div><div><strong>'+x.projs+'</strong><span>مشروعاً مختلفاً</span></div><div><strong>'+x.id+'</strong><span>أفكار برامج</span></div>')+
-   '</div><div class="pbar"><i style="width:'+Math.round(x.tot*100/mx)+'%"></i></div></button>'}).join(''):'<div class="empty">لا كتّاب أو متابعين بعد.</div>')+EXR;
+   '</div><div class="pbar"><i style="width:'+Math.round(x.tot*100/mx)+'%"></i></div>'+EXP(x.u.id)+'</div>'}).join(''):'<div class="empty">لا كتّاب أو متابعين بعد.</div>')+EXR;
 }
 function prodDetail(u,mode,R0){
   const x=pStat(u,R0),w=u.role==='writer',lab=mode==='w'?'هذا الأسبوع':'هذا الشهر';
@@ -915,37 +918,41 @@ function prodFilm(mode){
   const rows=P.map(u=>{
     const sh=Object.values(S.shot).filter(x=>x.by_id===u.id),shP=sh.filter(x=>ins(Date.parse(x.at))),shL=D?sh.filter(x=>(x.key||'').startsWith(D+'__')).length:0;
     const dec=prog.filter(x=>x.status_by===u.name&&ins(+x.ts)),acc=dec.filter(x=>x.status==='مقبولة').length,rej=dec.filter(x=>x.status==='مرفوضة').length,nt=dec.filter(x=>x.note).length;
-    return{u,shP,shL,acc,rej,nt};
+    const tx=x=>(x.by_name||'؟')+': '+String(x.text||x.link||'').slice(0,60);
+    return{u,shP,shL,acc,rej,nt,accL:dec.filter(x=>x.status==='مقبولة').map(tx),rejL:dec.filter(x=>x.status==='مرفوضة').map(tx)};
   });
-  S.exp={title:'إنتاجية قسم التصوير - '+(mode==='w'?'أسبوع':'شهر'),rows:[['الاسم','«تم التصوير» في الفترة','«تم التصوير» في القائمة الحالية','أفكار مقبولة','أفكار مرفوضة','أفكار بملاحظة']].concat(rows.map(r=>[r.u.name,r.shP,r.shL,r.acc,r.rej,r.nt])).concat([[],['نسبة إنجاز القائمة الحالية',pc+'%',doneAll+' من '+totN],['أفكار البرامج بلا قرار',pend]])};
+  const FH=['الاسم','«تم التصوير» في الفترة','«تم التصوير» في القائمة الحالية','أفكار مقبولة','أفكار مرفوضة','أفكار بملاحظة'],fr=r=>[r.u.name,r.shP,r.shL,r.acc,r.rej,r.nt],ptl=(mode==='w'?'أسبوع':'شهر'),extra=r=>[[],['الأفكار المقبولة (صاحب الفكرة: النص)']].concat(r.accL.map(t=>[t])).concat([[],['الأفكار المرفوضة (صاحب الفكرة: النص)']]).concat(r.rejL.map(t=>[t])),per={};
+  rows.forEach(r=>per[r.u.id]={title:'إنتاجية '+r.u.name+' - '+ptl,rows:[FH,fr(r),[],['نسبة إنجاز القائمة الحالية',pc+'%',doneAll+' من '+totN]].concat(extra(r))});
+  S.exp={title:'إنتاجية قسم التصوير - '+ptl,rows:[FH].concat(rows.map(fr)).concat([[],['نسبة إنجاز القائمة الحالية',pc+'%',doneAll+' من '+totN],['أفكار البرامج بلا قرار',pend]]).concat(...rows.map(r=>[[],[r.u.name]].concat(extra(r)))),per};
   return prodBack('أنس ومحمد')+PTITLE+prodTop(mode)+
   '<div class="card"><h2>القائمة الحالية'+(L?' رقم '+esc(L.data.n):'')+'</h2><div class="top2"><span>الإنجاز</span><b>'+doneAll+' من '+totN+' · '+pc+'%</b></div><div class="pbar"><i style="width:'+pc+'%"></i></div></div>'+
   '<div class="notice">أفكار البرامج بلا قرار حتى الآن: <b>'+pend+'</b></div>'+
-  rows.map(r=>'<div class="pp" style="cursor:default"><div class="top2"><b>'+esc(r.u.name)+'</b></div><div class="pk"><div><strong>'+r.shP+'</strong><span>«تم التصوير» في الفترة</span></div><div><strong>'+r.shL+'</strong><span>في القائمة الحالية</span></div><div><strong>'+r.nt+'</strong><span>أفكار بملاحظة</span></div></div><div class="pk"><div><strong>'+r.acc+'</strong><span>أفكار مقبولة</span></div><div><strong>'+r.rej+'</strong><span>أفكار مرفوضة</span></div><div><strong>'+(r.acc+r.rej)+'</strong><span>إجمالي القرارات</span></div></div></div>').join('')+
+  rows.map(r=>'<div class="pp" style="cursor:default" data-pid="'+r.u.id+'"><div class="top2"><b>'+esc(r.u.name)+'</b></div><div class="pk"><div><strong>'+r.shP+'</strong><span>«تم التصوير» في الفترة</span></div><div><strong>'+r.shL+'</strong><span>في القائمة الحالية</span></div><div><strong>'+r.nt+'</strong><span>أفكار بملاحظة</span></div></div><div class="pk"><div><strong>'+r.acc+'</strong><span>أفكار مقبولة</span></div><div><strong>'+r.rej+'</strong><span>أفكار مرفوضة</span></div><div><strong>'+(r.acc+r.rej)+'</strong><span>إجمالي القرارات</span></div></div><details class="idl"><summary>الأفكار المقبولة ('+r.acc+')</summary>'+(r.accL.length?'<ul>'+r.accL.map(t=>'<li>'+esc(t)+'</li>').join('')+'</ul>':'<p class="hint">لا شيء.</p>')+'</details><details class="idl"><summary>الأفكار المرفوضة ('+r.rej+')</summary>'+(r.rejL.length?'<ul>'+r.rejL.map(t=>'<li>'+esc(t)+'</li>').join('')+'</ul>':'<p class="hint">لا شيء.</p>')+'</details>'+EXP(r.u.id)+'</div>').join('')+
   '<p class="hint">الأفكار تُحسب حسب تاريخ تقديمها، وقرارات كل شخص حسب من وضع الحالة.</p>'+EXR;
 }
 function prodHosts(){
   const P=(S.cfg.stats&&S.cfg.stats.programs)||{},asof=(S.cfg.stats&&S.cfg.stats.asof)||'',today=ymdL(Date.now()),wk=pPeriod('w',0),wk1=pPeriod('w',1),mo=pPeriod('m',0);
   const y=+today.slice(0,4),m=+today.slice(5,7)-1;
   const months=[];for(let yy=2026,mm=9;yy<y||(yy===y&&mm<=m);mm++){if(mm>11){mm=0;yy++;if(yy>y||(yy===y&&mm>m))break}months.push([yy,mm])}
-  const rowsX=[['المذيع','البرنامج','حلقات هذا الأسبوع','حلقات هذا الشهر','إجمالي 2026','أيام منذ آخر حلقة','أطول انقطاع (يوم)']],wkX=[['المذيع','الشهر','الأسبوع الأول','الثاني','الثالث','الرابع','الخامس','المجموع']];
+  const hper={},rowsX=[['المذيع','البرنامج','حلقات هذا الأسبوع','حلقات هذا الشهر','إجمالي منذ أكتوبر','أيام منذ آخر حلقة','أطول انقطاع (يوم)']],wkX=[['المذيع','الشهر','الأسبوع الأول','الثاني','الثالث','الرابع','الخامس','المجموع']];
   const cards=HOSTS.map(h=>{
-    const L=((P[h.k]||[]).map(x=>String(x.d).slice(0,10))).filter(d=>d>='2026-01-01').sort();
+    const L=((P[h.k]||[]).map(x=>String(x.d).slice(0,10))).filter(d=>d>='2026-10-01').sort();
     const inR=r=>L.filter(d=>{const t=Date.parse(d+'T00:00:00Z')-2*3600e3;return t>=r[0]&&t<r[1]}).length;
     const last=L[L.length-1],since=last?dBetween(last,today):null;let gap=0;for(let i=1;i<L.length;i++)gap=Math.max(gap,dBetween(L[i-1],L[i]));if(since!=null)gap=Math.max(gap,since);
     const nw=inR(wk),pw=inR(wk1),nm=inR(mo);
-    rowsX.push([h.n,h.t,nw,nm,L.length,since==null?'—':since,gap]);
+    rowsX.push([h.n,h.t,nw,nm,L.length,since==null?'—':since,gap]);hper[h.t]={title:'إنتاجية '+h.n,rows:[rowsX[0],rowsX[rowsX.length-1]]};
     const tb=months.map(([yy,mm])=>{const pre=yy+'-'+String(mm+1).padStart(2,'0')+'-',dim=new Date(Date.UTC(yy,mm+1,0)).getUTCDate(),cnt=[0,1,2,3,4].map(i=>{const a=i*7+1,b=Math.min(dim,a+6);if(a>dim)return null;const isF=pre===today.slice(0,8)&&a>+today.slice(8);return isF?'—':L.filter(d=>d.startsWith(pre)&&+d.slice(8)>=a&&+d.slice(8)<=b).length}),sum=L.filter(d=>d.startsWith(pre)).length;
       wkX.push([h.n,MAR[mm]+' '+yy].concat(cnt.map(c=>c==null?'':c)).concat([sum]));
       return '<tr><td><b>'+MAR[mm]+'</b></td>'+cnt.map(c=>'<td>'+(c==null?'':c)+'</td>').join('')+'<td><b>'+sum+'</b></td></tr>'}).join('');
-    return '<div class="card"><div class="top2"><h2>'+esc(h.n)+'</h2><span class="hint">'+esc(h.t)+'</span></div><div class="pk"><div><strong>'+nw+'</strong><span>حلقة هذا الأسبوع'+(pw?' (الماضي '+pw+')':'')+'</span></div><div><strong>'+nm+'</strong><span>حلقة هذا الشهر</span></div><div><strong>'+L.length+'</strong><span>حلقة في 2026</span></div></div><div class="pk"><div><strong>'+(since==null?'—':since)+'</strong><span>يوماً منذ آخر حلقة</span></div><div><strong>'+gap+'</strong><span>أطول انقطاع (يوم)</span></div><div><strong>'+(L.length?esc(last.slice(5)):'—')+'</strong><span>تاريخ آخر حلقة</span></div></div>'+
-    '<div style="overflow-x:auto;margin-top:8px"><table class="wkt"><tr><th>الشهر</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>المجموع</th></tr>'+tb+'</table></div></div>';
+    return '<div class="card" data-pid="'+esc(h.t)+'"><div class="top2"><h2>'+esc(h.n)+'</h2><span class="hint">'+esc(h.t)+'</span></div><div class="pk"><div><strong>'+nw+'</strong><span>حلقة هذا الأسبوع'+(pw?' (الماضي '+pw+')':'')+'</span></div><div><strong>'+nm+'</strong><span>حلقة هذا الشهر</span></div><div><strong>'+L.length+'</strong><span>حلقة منذ أكتوبر</span></div></div><div class="pk"><div><strong>'+(since==null?'—':since)+'</strong><span>يوماً منذ آخر حلقة</span></div><div><strong>'+gap+'</strong><span>أطول انقطاع (يوم)</span></div><div><strong>'+(L.length?esc(last.slice(5)):'—')+'</strong><span>تاريخ آخر حلقة</span></div></div>'+
+    '<div style="overflow-x:auto;margin-top:8px"><table class="wkt"><tr><th>الشهر</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>المجموع</th></tr>'+tb+'</table></div>'+EXP(h.t)+'</div>';
   }).join('');
-  S.exp={title:'إنتاجية المذيعين',rows:rowsX.concat([[]],wkX)};
+  HOSTS.forEach(h=>{const w=wkX.filter((r,i)=>i===0||r[0]===h.n);hper[h.t].rows=hper[h.t].rows.concat([[]],w)});
+  S.exp={title:'إنتاجية المذيعين',rows:rowsX.concat([[]],wkX),per:hper};
   return prodBack('المذيعون')+PTITLE+'<p class="hint">الأسابيع: 1 = الأيام 1 إلى 7 من الشهر، 2 = 8 إلى 14، 3 = 15 إلى 21، 4 = 22 إلى 28، 5 = 29 فما فوق. تُحدَّث الأرقام عند الطلب'+(asof?' (حتى '+esc(asof)+')':'')+'.</p>'+cards+EXR;
 }
-Object.assign(ACT,{prs:d=>{S.prS=d.v||'';S.prP=null;render();scrollTo(0,0)},prm:d=>{S.prM=d.v;render()},prp:d=>{S.prP=d.v||null;render();scrollTo(0,0)},pr:()=>window.print(),
- xl:async()=>{try{if(!window.XLSX){await new Promise((res,rej)=>{const sc=document.createElement('script');sc.src='https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';sc.onload=res;sc.onerror=rej;document.head.appendChild(sc)})}const e=S.exp;if(!e)return;const wb=XLSX.utils.book_new(),ws=XLSX.utils.aoa_to_sheet(e.rows);ws['!views']=[{rightToLeft:true}];XLSX.utils.book_append_sheet(wb,ws,e.title.slice(0,30).replace(/[\\\/\?\*\[\]:]/g,' '));XLSX.writeFile(wb,e.title+'.xlsx')}catch(err){alert('تعذّر إنشاء ملف Excel، جرّب مرة أخرى')}}});
+Object.assign(ACT,{prs:d=>{S.prS=d.v||'';S.prP=null;render();scrollTo(0,0)},prm:d=>{S.prM=d.v;render()},prp:d=>{S.prP=d.v||null;render();scrollTo(0,0)},pr:d=>{if(d.id){const el=document.querySelector('[data-pid="'+d.id.replace(/"/g,'')+'"]');if(el){document.body.classList.add('printone');el.classList.add('psel')}setTimeout(()=>{window.print();setTimeout(()=>{document.body.classList.remove('printone');document.querySelectorAll('.psel').forEach(x=>x.classList.remove('psel'))},800)},60)}else window.print()},
+ xl:async d=>{try{if(!window.XLSX){await new Promise((res,rej)=>{const sc=document.createElement('script');sc.src='https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';sc.onload=res;sc.onerror=rej;document.head.appendChild(sc)})}const e0=S.exp;if(!e0)return;const e=(d.id&&e0.per&&e0.per[d.id])||e0;const wb=XLSX.utils.book_new(),ws=XLSX.utils.aoa_to_sheet(e.rows);ws['!views']=[{rightToLeft:true}];XLSX.utils.book_append_sheet(wb,ws,e.title.slice(0,30).replace(/[\\\/\?\*\[\]:]/g,' '));XLSX.writeFile(wb,e.title+'.xlsx')}catch(err){alert('تعذّر إنشاء ملف Excel، جرّب مرة أخرى')}}});
 ACT.lgrp=d=>{S.lg=d.v;render()};ACT.menu=()=>{const d=$('#drw');if(d)d.classList.toggle('open')};
 ACT.goto=d=>{S.tab=d.t;render()};ACT.more=()=>{S.more=!S.more;render()};
 document.addEventListener('click',e=>{const t=e.target.closest('[data-tab],[data-act]');if(!t)return;if(t.dataset.tab){S.tab=t.dataset.tab;S._hanim=0;document.body.classList.remove('hanim');render();return}const f=ACT[t.dataset.act];if(f){if(t.tagName==='A')e.preventDefault();f(t.dataset,t,e)}});

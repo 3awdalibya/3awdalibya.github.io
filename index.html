@@ -141,9 +141,9 @@ const nextMeeting=()=>S.meetings.filter(m=>m.status!=='canceled'&&m.at>Date.now(
 function remind(m){if(!m)return '';const h=(m.at-Date.now())/3600e3;if(h>12||h<-1)return '';return '<div class="notice">🔔 تذكير: '+esc(m.title)+' '+(h<=0?'بدأ الآن':'بعد '+(h<1?Math.max(1,Math.round(h*60))+' دقيقة':Math.round(h)+' ساعة'))+' · '+esc(ftime(m.at))+'</div>'}
 function homeView(){
   const m=nextMeeting(),canc=S.meetings.filter(x=>x.status==='canceled'&&x.canceled_at>Date.now()-3*86400e3);
-  const cs=LINKS.filter(l=>l.r.includes(R())).map(l=>'<a class="item" href="'+esc(l.u)+'" target="_blank" rel="noopener" style="text-decoration:none;color:inherit;border-inline-start:6px solid var(--g)"><b>'+esc(l.t)+'</b><span class="hint">'+esc(l.d)+' (تنتقل لاحقاً إلى هذا الموقع)</span></a>').join('');
+  const cs=LINKS.filter(l=>l.r.includes(R())).map(l=>'<a class="item" href="'+esc(l.u)+'" target="_blank" rel="noopener" style="text-decoration:none;color:inherit;border-inline-start:6px solid var(--g)"><b>'+esc(l.t)+'</b><span class="hint">'+esc(l.d)+'</span></a>').join('');
   return dutyCards()+remind(m)+(canc.length?'<div class="notice" style="background:var(--bad-soft);color:var(--bad)">أُلغي اجتماع: '+canc.map(x=>esc(x.title)).join('، ')+'</div>':'')+
-  (m?'<div class="card"><h2>الاجتماع القادم</h2><div class="pn">'+esc(m.title)+'</div><div>'+esc(fdate(m.at))+' · '+esc(ftime(m.at))+'</div>'+(m.place?'<div class="hint">'+esc(m.place)+'</div>':'')+'</div>':'')+weekCard()+occCard()+(cs?'<h2>صفحات أخرى</h2>'+cs:'');
+  (m?'<div class="card"><h2>الاجتماع القادم</h2><div class="pn">'+esc(m.title)+'</div><div>'+esc(fdate(m.at))+' · '+esc(ftime(m.at))+'</div>'+(m.place?'<div class="hint">'+esc(m.place)+'</div>':'')+'</div>':'')+(R()==='owner'?sumCard():'')+weekCard()+occCard()+(cs?'<h2>صفحات أخرى</h2>'+cs:'');
 }
 function icsFor(m){const d=t=>new Date(t).toISOString().replace(/[-:]/g,'').replace(/\.\d+/,'');return ['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//3awdalibya//meetings//AR','BEGIN:VEVENT','UID:'+m.id+'@3awdalibya','DTSTAMP:'+d(Date.now()),'DTSTART:'+d(m.at),'DTEND:'+d(m.at+3600e3),'SUMMARY:'+(m.title||'اجتماع').replace(/[\r\n,;]/g,' '),'LOCATION:'+(m.place||'').replace(/[\r\n,;]/g,' '),'BEGIN:VALARM','ACTION:DISPLAY','DESCRIPTION:تذكير بالاجتماع','TRIGGER:-PT12H','END:VALARM','END:VEVENT','END:VCALENDAR'].join('\r\n')}
 function meetView(){
@@ -506,6 +506,25 @@ Object.assign(ACT,{
   }
 });
 const newsFor=p=>S.pu.some(u=>u.project===p&&SOON.includes(u.status)&&Date.now()-u.ts<14*86400e3);
+
+/* ---------- weekly summary + backup (owner) ---------- */
+function sumCard(){
+  const w=Date.now()-7*86400e3,sh=Object.values(S.shot).filter(x=>Date.parse(x.at)>w).length;
+  const pu=S.pu.filter(x=>x.ts>w),who={};pu.forEach(x=>who[x.by_name||'؟']=(who[x.by_name||'؟']||0)+1);
+  const ap=S.gi.filter(x=>x.approved_at>w&&['approved','published'].includes(x.status)),pb=S.gi.filter(x=>x.published_at>w);
+  const per={};ap.forEach(x=>per[x.author]=(per[x.author]||0)+1);
+  const unpub=S.gi.filter(x=>x.status==='approved').length,wait=S.gi.filter(x=>geff(x)==='review').length;
+  const mt=S.meetings.filter(x=>x.at>w&&x.at<Date.now()&&x.status!=='canceled').length,mc=S.meetings.filter(x=>x.status==='canceled'&&x.canceled_at>w).length;
+  const nr=S.reports.filter(x=>!x.reply).length,ni=S.ideas.filter(x=>x.kind==='prog'&&!x.status).length;
+  const L=[['تم التصوير (آخر 7 أيام)',sh],['تحديثات المشاريع الواردة',pu.length+(pu.length?' ('+Object.keys(who).map(k=>esc(k)+' '+who[k]).join('، ')+')':'')],['جرافيك معتمد',ap.length+(ap.length?' ('+Object.keys(per).map(k=>esc(k)+' '+per[k]).join('، ')+')':'')],['جرافيك نُشر',pb.length],['معتمد غير منشور',unpub],['مقترحات بانتظار مراجعتك',wait],['اجتماعات / ملغاة',mt+' / '+mc],['بلاغات بلا رد',nr],['أفكار برامج بلا حالة',ni]];
+  return '<div class="card"><h2>ملخص الأسبوع</h2>'+L.map(([a,b])=>'<div class="top2"><span>'+a+'</span><b>'+b+'</b></div>').join('')+'<div class="acts"><button data-act="backup">تنزيل نسخة احتياطية (JSON)</button></div><p class="hint" style="margin:0">يُحسب مباشرة من بيانات الموقع كلما فتحته. ينصح بتنزيل نسخة احتياطية مرة أسبوعياً.</p></div>';
+}
+ACT.backup=async()=>{
+  try{const T=['profiles','config','lists','shot','meetings','meeting_notes','occasions','swaps','devices','pub_ideas','ideas','pupdates','gitems','gpriv'];const o={at:new Date().toISOString()};
+    for(const t of T){const r=await sb.from(t).select('*');o[t]=r.error?{error:r.error.message}:r.data}
+    const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(o)],{type:'application/json'}));a.download='backup-3awda-'+dkey(0)+'.json';document.body.appendChild(a);a.click();a.remove()
+  }catch(e){alert('تعذر إنشاء النسخة')}
+};
 document.addEventListener('click',e=>{const t=e.target.closest('[data-tab],[data-act]');if(!t)return;if(t.dataset.tab){S.tab=t.dataset.tab;render();return}const f=ACT[t.dataset.act];if(f){if(t.tagName==='A')e.preventDefault();f(t.dataset,t,e)}});
 boot();
 </script></body></html>

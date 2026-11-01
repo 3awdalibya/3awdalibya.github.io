@@ -198,7 +198,7 @@ const myTabs=()=>{const t=[['home','الرئيسية']];if(SHOOTR())t.push(['lis
 const AVT={mohamed:'avatars/mohamed.jpg'};const av=(u,c)=>AVT[u]?'<img class="'+(c||'av')+'" alt="" src="'+AVT[u]+'">':'';
 const nzA=t=>String(t||'').replace(/[أإآ]/g,'ا').replace(/ة/g,'ه').replace(/ى/g,'ي').replace(/[\u064B-\u0652]/g,'').toLowerCase();
 function phFilter(){const q=nzA(S.phq||'').trim();document.querySelectorAll('#app .feed .item').forEach(e=>{e.hidden=!!q&&!nzA(e.textContent).includes(q)})}
-const PHALL=()=>!!S.me&&(R()==='owner'||['hassan','hamza','mohamed','anas','hadi'].includes(S.me.username));
+const PHALL=()=>!!S.me&&(R()==='owner'||['hassan','hamza','mohamed','anas','hadi','shaibani','omar'].includes(S.me.username));
 const ORD={tracker:['upd','ph','gd'],writer:['gfx','avoid','dev','upd','cp','pid','meet','stats','prog'],filming:['lists','upd','cp','pid','prog','meet','stats'],editing:['pid','prog','upd','cp','meet','stats'],owner:['lists','prod','upd','cp','gfx','pid','prog','stats','meet','ppl'],exec:['lists','prod','upd','cp','gfx','stats','prog','meet','pid'],ops:['gfx','upd','cp','prog','meet','stats'],photographer:['lists','upd','cp','prog','meet'],follower:['upd','cp','lists','prog','meet'],helper:['upd','cp','lists','prog','meet']};
 const ordKey=()=>(isFilm()&&R()!=='filming')?'filming':R();
 function orderedTabs(){const all=myTabs(),h=Object.fromEntries(all),out=[all[0]];(ORD[ordKey()]||[]).forEach(k=>{if(h[k])out.push([k,h[k]])});all.slice(1).forEach(t=>{if(!out.some(x=>x[0]===t[0]))out.push(t)});return out}

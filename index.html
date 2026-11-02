@@ -291,16 +291,16 @@ function meetItem(m,up){
   '<div class="acts">'+(up&&!c?'<button data-act="ics" data-id="'+m.id+'">أضف إلى تقويم هاتفي (تنبيه قبل 12 ساعة)</button>':'')+(isMgr()&&up&&!c?'<button class="del" data-act="cancelmeet" data-id="'+m.id+'">إلغاء الاجتماع</button>':'')+(R()==='owner'?'<button class="del" data-act="delmeet" data-id="'+m.id+'">حذف</button>':'')+'</div></div>'
 }
 /* ---------- lists ---------- */
-function autoShot(date,r){const t0=Date.parse(date+'T00:00:00Z')-2*3600e3,q=nzA(r.proj||'');if(!q||q.length<4)return null;const mt=n=>{const m=nzA(n||'');return m.length>=4&&(q.includes(m)||m.includes(q))};const u=(S.pu||[]).find(u=>+u.ts>=t0&&mt(u.project));if(u)return u;const v=((S.cfg.vids&&S.cfg.vids.list)||[]).find(v=>String(v.date)>=date&&mt(v.proj));return v?{ts:Date.parse(v.date+'T12:00:00Z'),vid:v.title}:null}
+function autoShot(date,r,sec){const q=nzA(r.proj||'');if(!q||q.length<4)return null;const g=sec==='d'?'d':(r.prog||'');const mt=n=>{const m=nzA(n||'');return m.length>=4&&(q.includes(m)||m.includes(q))};const v=((S.cfg.vids&&S.cfg.vids.list)||[]).find(v=>String(v.date)>=date&&v.l===g&&mt(v.proj));return v?{ts:Date.parse(v.date+'T12:00:00Z'),vid:v.title}:null}
 function itemCard(date,i,r,sec){
-  const k=date+'__'+sec+i,sh=S.shot[k],au=!sh&&autoShot(date,r);const bd=[];
+  const k=date+'__'+sec+i,sh=S.shot[k],au=!sh&&autoShot(date,r,sec);const bd=[];
   if(r.perm==='K')bd.push('<span class="tag warn">يلزم التنسيق قبل الوصول</span>');else if(r.perm_ar)bd.push('<span class="tag">'+esc(r.perm_ar)+'</span>');if(r.sens)bd.push('<span class="tag warn">موقع حساس</span>');
   const place=['وسط','شرق','غرب','جنوب'].includes(r.region)?'طرابلس · '+r.region:(r.region||'');
   return '<div class="item" style="'+(sh||au?'border-color:var(--ok);background:var(--ok-soft)':'')+'"><div class="top2"><span class="pn pjn">'+i+'. '+esc(r.proj)+'</span><span class="hint">'+esc(place)+'</span></div>'+(r.idea?'<div><span class="hint">ما نصوّره</span><div class="txt">'+esc(r.idea)+'</div></div>':'')+(r.why?'<div><span class="hint">سبب التصوير</span><div class="txt">'+esc(r.why)+'</div></div>':'')+
   (()=>{const ph=phonesFor(r.proj);return ph.length?'<details class="idl phl"><summary>📞 أرقام للتواصل ('+ph.length+')</summary>'+ph.map(d=>'<div class="phc"><b>'+esc(d.name)+'</b><span class="hint"> '+esc([d.kind,d.org].filter(Boolean).join(' · '))+'</span>'+phLinks(d)+'</div>').join('')+'</details>':''})()+
   '<div class="chips">'+bd.join('')+(r.map?'<a class="tag" href="'+esc(r.map)+'" target="_blank" rel="noopener">الموقع على الخريطة</a>':'')+'</div>'+
   (r.info?'<div class="acts"><button data-act="info" data-k="'+k+'">'+(S.open[k]?'إخفاء المعلومات':'معلومات عن المشروع')+'</button></div>'+(S.open[k]?'<div class="notice" style="font-weight:400"><div class="txt">'+esc(r.info).split(' | ').join('\n')+'</div></div>':''):'')+
-  (au?'<div class="notice ok">✓ اعتُبر مصوَّراً تلقائياً · '+(au.vid?'نُشر له فيديو «'+esc(au.vid)+'»':'سُجّل تحديث له من «'+esc(au.by_name||nm(au.by_id)||'')+'» · '+esc(fdt(+au.ts)))+'</div>':'')+(sh?'<div class="notice ok">✓ تم التصوير · '+esc(sh.by_name||'')+' · '+esc(fdt(Date.parse(sh.at)))+'</div>':'')+(canShot()&&!au?'<div class="acts">'+(sh?'<button class="del" data-act="unshot" data-k="'+k+'">تراجع</button>':'<button class="go g sm" data-act="shot" data-k="'+k+'" data-d="'+date+'" data-p="'+esc(r.proj)+'">تم التصوير</button>')+'</div>':'')+'</div>'
+  (au?'<div class="notice ok">✓ اعتُبر مصوَّراً تلقائياً · نُشر له فيديو «'+esc(au.vid)+'»</div>':'')+(sh?'<div class="notice ok">✓ تم التصوير · '+esc(sh.by_name||'')+' · '+esc(fdt(Date.parse(sh.at)))+'</div>':'')+(canShot()&&!au?'<div class="acts">'+(sh?'<button class="del" data-act="unshot" data-k="'+k+'">تراجع</button>':'<button class="go g sm" data-act="shot" data-k="'+k+'" data-d="'+date+'" data-p="'+esc(r.proj)+'">تم التصوير</button>')+'</div>':'')+'</div>'
 }
 function listsView(){
   if(!S.lists.length)return '<div class="empty">لا قوائم بعد.</div>';
@@ -308,7 +308,7 @@ function listsView(){
   const G=[['d','التحديث اليومي','cam','#0F7C93,#0B5F72',(L.items||[]).map((r,i)=>({r,i:i+1,sec:'d'}))]];
   [['تعال نقولك','تعال نقولك','#E8782A,#C4561A'],['الطاهر','حلقات الطاهر','#4DB968,#2F8F4B'],['صلاح زايد','حلقات صلاح زايد','#7A6BD0,#5648A8']].forEach(([k,t,c])=>G.push([k,t,'tv',c,(L.prog||[]).map((r,i)=>({r,i:i+1,sec:'p'})).filter(x=>x.r.prog===k)]));
   if(!G.some(g=>g[0]===S.lg))S.lg='d';
-  const isD=x=>!!(S.shot[D+'__'+x.sec+x.i]||autoShot(D,x.r)),done=g=>g[4].filter(isD).length;G.forEach(g=>{g[4]=g[4].filter(x=>!isD(x)).concat(g[4].filter(isD))});
+  const isD=x=>!!(S.shot[D+'__'+x.sec+x.i]||autoShot(D,x.r,x.sec)),done=g=>g[4].filter(isD).length;G.forEach(g=>{g[4]=g[4].filter(x=>!isD(x)).concat(g[4].filter(isD))});
   const cards=G.map(g=>{const n=g[4].length,dn=done(g),pc=n?Math.round(dn*100/n):0;return '<button class="lq'+(S.lg===g[0]?' sel':'')+'" data-act="lgrp" data-v="'+g[0]+'" style="background:linear-gradient(135deg,'+g[3].split(',')[0]+','+g[3].split(',')[1]+')">'+hi(g[2])+'<b>'+g[1]+'</b><div><small>'+dn+' من '+n+'</small><div class="lbar"><i style="width:'+pc+'%"></i></div></div></button>'}).join('');
   const cur=G.find(g=>g[0]===S.lg);
   return '<div class="card"><div class="top2"><h2>قائمة التصوير رقم '+esc(L.n)+'</h2><span class="hint">'+esc(L.date)+'</span></div><p class="hint">وقت التصوير تقدّرونه أنتم.</p>'+(S.lists.length>1?'<div class="chips">'+S.lists.map(x=>'<button class="chip" aria-pressed="'+(x.date===S.cur)+'" data-act="issue" data-v="'+x.date+'">'+esc(x.date)+'</button>').join('')+'</div>':'')+'</div><div class="lg4">'+cards+'</div><h2>'+esc(cur[1])+' · '+cur[4].length+'</h2><div class="feed">'+(cur[4].length?cur[4].map(x=>itemCard(D,x.i,x.r,x.sec)).join(''):'<div class="empty">لا عناصر في هذه القائمة.</div>')+'</div>';
@@ -733,7 +733,7 @@ function staleBox(){if(!['follower','helper','tracker','owner','exec'].includes(
 function hStats(){
   const role=R(),w=Date.now()-7*86400e3,cy=gcy&&gcy(),me=S.me.id;
   const gm=S.gi.filter(x=>x.uid===me&&x.kind==='weekly'&&cy&&x.cycle===cy.id);
-  const L=S.lists[0],shotN=L?(L.data.items||[]).filter((r,i)=>S.shot[L.date+'__d'+(i+1)]||autoShot(L.date,r)).length+(L.data.prog||[]).filter((r,i)=>S.shot[L.date+'__p'+(i+1)]||autoShot(L.date,r)).length:0,totN=L?(L.data.items||[]).length+(L.data.prog||[]).length:0;
+  const L=S.lists[0],shotN=L?(L.data.items||[]).filter((r,i)=>S.shot[L.date+'__d'+(i+1)]||autoShot(L.date,r,'d')).length+(L.data.prog||[]).filter((r,i)=>S.shot[L.date+'__p'+(i+1)]||autoShot(L.date,r,'p')).length:0,totN=L?(L.data.items||[]).length+(L.data.prog||[]).length:0;
   const apr=S.gi.filter(x=>['approved','published'].includes(x.status)),pubN=apr.filter(x=>x.status==='published').length;
   const rev=S.gi.filter(x=>geff(x)==='review'),nr=S.reports.filter(x=>!x.reply).length,ni=S.ideas.filter(x=>x.kind==='prog'&&!x.status).length;
   const rings=[],tasks=[],m=nextMeeting(),stl=staleProj();

@@ -291,7 +291,7 @@ function meetItem(m,up){
   '<div class="acts">'+(up&&!c?'<button data-act="ics" data-id="'+m.id+'">أضف إلى تقويم هاتفي (تنبيه قبل 12 ساعة)</button>':'')+(isMgr()&&up&&!c?'<button class="del" data-act="cancelmeet" data-id="'+m.id+'">إلغاء الاجتماع</button>':'')+(R()==='owner'?'<button class="del" data-act="delmeet" data-id="'+m.id+'">حذف</button>':'')+'</div></div>'
 }
 /* ---------- lists ---------- */
-function autoShot(date,r){const t0=Date.parse(date+'T00:00:00Z')-2*3600e3,q=nzA(r.proj||'');if(!q||q.length<4)return null;return (S.pu||[]).find(u=>+u.ts>=t0&&(m=>m.length>=4&&(q.includes(m)||m.includes(q)))(nzA(u.project||'')))||null}
+function autoShot(date,r){const t0=Date.parse(date+'T00:00:00Z')-2*3600e3,q=nzA(r.proj||'');if(!q||q.length<4)return null;const mt=n=>{const m=nzA(n||'');return m.length>=4&&(q.includes(m)||m.includes(q))};const u=(S.pu||[]).find(u=>+u.ts>=t0&&mt(u.project));if(u)return u;const v=((S.cfg.vids&&S.cfg.vids.list)||[]).find(v=>String(v.date)>=date&&mt(v.proj));return v?{ts:Date.parse(v.date+'T12:00:00Z'),vid:v.title}:null}
 function itemCard(date,i,r,sec){
   const k=date+'__'+sec+i,sh=S.shot[k],au=!sh&&autoShot(date,r);const bd=[];
   if(r.perm==='K')bd.push('<span class="tag warn">يلزم التنسيق قبل الوصول</span>');else if(r.perm_ar)bd.push('<span class="tag">'+esc(r.perm_ar)+'</span>');if(r.sens)bd.push('<span class="tag warn">موقع حساس</span>');
@@ -300,7 +300,7 @@ function itemCard(date,i,r,sec){
   (()=>{const ph=phonesFor(r.proj);return ph.length?'<details class="idl phl"><summary>📞 أرقام للتواصل ('+ph.length+')</summary>'+ph.map(d=>'<div class="phc"><b>'+esc(d.name)+'</b><span class="hint"> '+esc([d.kind,d.org].filter(Boolean).join(' · '))+'</span>'+phLinks(d)+'</div>').join('')+'</details>':''})()+
   '<div class="chips">'+bd.join('')+(r.map?'<a class="tag" href="'+esc(r.map)+'" target="_blank" rel="noopener">الموقع على الخريطة</a>':'')+'</div>'+
   (r.info?'<div class="acts"><button data-act="info" data-k="'+k+'">'+(S.open[k]?'إخفاء المعلومات':'معلومات عن المشروع')+'</button></div>'+(S.open[k]?'<div class="notice" style="font-weight:400"><div class="txt">'+esc(r.info).split(' | ').join('\n')+'</div></div>':''):'')+
-  (au?'<div class="notice ok">✓ اعتُبر مصوَّراً تلقائياً · سُجّل تحديث له من «'+esc(au.by_name||nm(au.by_id)||'')+'» · '+esc(fdt(+au.ts))+'</div>':'')+(sh?'<div class="notice ok">✓ تم التصوير · '+esc(sh.by_name||'')+' · '+esc(fdt(Date.parse(sh.at)))+'</div>':'')+(canShot()&&!au?'<div class="acts">'+(sh?'<button class="del" data-act="unshot" data-k="'+k+'">تراجع</button>':'<button class="go g sm" data-act="shot" data-k="'+k+'" data-d="'+date+'" data-p="'+esc(r.proj)+'">تم التصوير</button>')+'</div>':'')+'</div>'
+  (au?'<div class="notice ok">✓ اعتُبر مصوَّراً تلقائياً · '+(au.vid?'نُشر له فيديو «'+esc(au.vid)+'»':'سُجّل تحديث له من «'+esc(au.by_name||nm(au.by_id)||'')+'» · '+esc(fdt(+au.ts)))+'</div>':'')+(sh?'<div class="notice ok">✓ تم التصوير · '+esc(sh.by_name||'')+' · '+esc(fdt(Date.parse(sh.at)))+'</div>':'')+(canShot()&&!au?'<div class="acts">'+(sh?'<button class="del" data-act="unshot" data-k="'+k+'">تراجع</button>':'<button class="go g sm" data-act="shot" data-k="'+k+'" data-d="'+date+'" data-p="'+esc(r.proj)+'">تم التصوير</button>')+'</div>':'')+'</div>'
 }
 function listsView(){
   if(!S.lists.length)return '<div class="empty">لا قوائم بعد.</div>';

@@ -424,6 +424,7 @@ function pplView(){
 /* ---------- actions ---------- */
 const val=id=>($(id)||{}).value||'';
 const ok=async r=>{if(r&&r.error)throw r.error;return r};
+function galFirst(n){const G=S.gal||{};if(!n)return '';if(G[n]&&G[n].length)return G[n][0];const q=nzA(n);let k=Object.keys(G).find(x=>nzA(x)===q)||Object.keys(G).find(x=>{const a=nzA(x);return a.includes(q)||q.includes(a)});return k&&G[k].length?G[k][0]:''}
 function galStrip(n){const L=(S.gal||{})[n];if(!L||!L.length)return '';return '<div class="gst">'+L.map((f,i)=>'<img loading="lazy" src="'+f+'" alt="" data-act="galo" data-v="'+esc(n)+'" data-i="'+i+'">').join('')+'</div>'}
 function galOpen(n,i){const L=(S.gal||{})[n]||[];if(!L.length)return;let o=document.getElementById('galbox');if(o)o.remove();o=document.createElement('div');o.id='galbox';o.innerHTML='<div class="gbx" dir="ltr">'+L.map(f=>'<div><img src="'+f+'" alt=""></div>').join('')+'</div><button class="gcl" aria-label="إغلاق">×</button><div class="gct" dir="ltr"></div>';document.body.appendChild(o);const b=o.querySelector('.gbx'),c=o.querySelector('.gct'),w=()=>b.clientWidth||1,up=()=>{c.textContent=(Math.round(b.scrollLeft/w())+1)+' / '+L.length};requestAnimationFrame(()=>{b.scrollLeft=i*w();up()});b.addEventListener('scroll',up,{passive:true});o.querySelector('.gcl').onclick=()=>o.remove();o.addEventListener('click',e=>{if(e.target===o||(e.target.parentElement&&e.target.parentElement.parentElement===b&&e.target.tagName!=='IMG'))o.remove()})}
 const ACT={
@@ -725,7 +726,7 @@ function hSlides(){
   if(!L.length)return '<div class="hs hs-empty"><b>لا تحديثات من الميدان بعد</b><span>عندما يسجّل المتابع تحديثاً سيظهر هنا بالصورة.</span></div>';
   const n=L.length;
   return '<div class="hs"><div class="live"><i></i>آخر من الميدان</div><div class="hs2" id="hs2">'+L.map(u=>{const c=SSC[u.status]||SSC['شيء مهم في الموقع'],pk=projKind(u.project),img=u.media&&u.media.url&&(u.media.type||'').startsWith('image');
-    return '<div class="hsl">'+(img?'<img alt="" src="'+esc(u.media.url)+'">':hScene(c[1],c[2],pk[0]))+'<span class="hst" style="background:'+c[0]+'">'+pk[1]+' '+esc(u.status)+'</span><h3>'+esc(u.project)+'</h3><p>'+esc((u.notes||[]).join(' · '))+((u.notes||[]).length?' · ':'')+esc(u.by_name||nm(u.by_id)||'')+' · '+ago(u.ts)+'</p></div>'}).join('')+'</div>'+(n>1?'<div class="hdots" id="hdots">'+L.map((_,i)=>'<i'+(i===0?' class="on"':'')+'></i>').join('')+'</div>':'')+'</div>';
+    const gf=img?'':galFirst(u.project);return '<div class="hsl">'+(img?'<img alt="" src="'+esc(u.media.url)+'">':gf?'<img alt="" src="'+esc(gf)+'">':hScene(c[1],c[2],pk[0]))+'<span class="hst" style="background:'+c[0]+'">'+pk[1]+' '+esc(u.status)+'</span><h3>'+esc(u.project)+'</h3><p>'+esc((u.notes||[]).join(' · '))+((u.notes||[]).length?' · ':'')+esc(u.by_name||nm(u.by_id)||'')+' · '+ago(u.ts)+'</p></div>'}).join('')+'</div>'+(n>1?'<div class="hdots" id="hdots">'+L.map((_,i)=>'<i'+(i===0?' class="on"':'')+'></i>').join('')+'</div>':'')+'</div>';
 }
 function hsGo(i){const c=document.getElementById('hs2');if(!c)return;const k=c.children[i];if(k)c.scrollTo({left:c.scrollLeft+k.getBoundingClientRect().left-c.getBoundingClientRect().left,behavior:'smooth'})}
 function hsIdx(){const c=document.getElementById('hs2');if(!c)return 0;return Math.round(Math.abs(c.scrollLeft)/Math.max(1,c.clientWidth))}

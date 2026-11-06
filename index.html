@@ -228,7 +228,7 @@ function tabBadge(k){const me=S.me.id;
   return 0}
 async function loadAll(){
   touchSeen();
-  if(!S.gal){try{S.gal=await (await fetch('gallery.json?v=2')).json()}catch(e){S.gal={}}}
+  if(!S.gal){try{S.gal=await (await fetch('gallery.json?v=3',{cache:'no-store'})).json()}catch(e){S.gal={}}}
   const q=async p=>{try{const r=await p;return r.error?[]:(r.data||[])}catch(e){return[]}};
   const J={cfg:sb.from('config').select('*'),meetings:sb.from('meetings').select('*').order('at'),notes:sb.from('meeting_notes').select('*'),occ:sb.from('occasions').select('*'),swaps:sb.from('swaps').select('*'),devices:sb.from('devices').select('*').order('ts'),phones:sb.from('phones').select('*').order('name'),reports:sb.from('reports').select('*').order('ts',{ascending:false}),pub:sb.from('pub_ideas').select('*').order('ts',{ascending:false}).limit(300),pu:sb.from('pupdates').select('*').order('ts',{ascending:false}).limit(300),ideas:sb.from('ideas').select('*').order('ts',{ascending:false}),people:sb.from('profiles').select('*').order('created_at')};
   if(canG()){J.gi=sb.from('gitems').select('*').order('updated_at',{ascending:false}).limit(3000);if(R()==='owner')J.gp=sb.from('gpriv').select('*')}
@@ -424,9 +424,10 @@ function pplView(){
 /* ---------- actions ---------- */
 const val=id=>($(id)||{}).value||'';
 const ok=async r=>{if(r&&r.error)throw r.error;return r};
-function galFirst(n){const G=S.gal||{};if(!n)return '';if(G[n]&&G[n].length)return G[n][0];const q=nzA(n);let k=Object.keys(G).find(x=>nzA(x)===q)||Object.keys(G).find(x=>{const a=nzA(x);return a.includes(q)||q.includes(a)});return k&&G[k].length?G[k][0]:''}
-function galStrip(n){const L=(S.gal||{})[n];if(!L||!L.length)return '';return '<div class="gst">'+L.map((f,i)=>'<img loading="lazy" src="'+f+'" alt="" data-act="galo" data-v="'+esc(n)+'" data-i="'+i+'">').join('')+'</div>'}
-function galOpen(n,i){const L=(S.gal||{})[n]||[];if(!L.length)return;let o=document.getElementById('galbox');if(o)o.remove();o=document.createElement('div');o.id='galbox';o.innerHTML='<div class="gbx" dir="ltr">'+L.map(f=>'<div><img src="'+f+'" alt=""></div>').join('')+'</div><button class="gcl" aria-label="إغلاق">×</button><div class="gct" dir="ltr"></div>';document.body.appendChild(o);const b=o.querySelector('.gbx'),c=o.querySelector('.gct'),w=()=>b.clientWidth||1,up=()=>{c.textContent=(Math.round(b.scrollLeft/w())+1)+' / '+L.length};requestAnimationFrame(()=>{b.scrollLeft=i*w();up()});b.addEventListener('scroll',up,{passive:true});o.querySelector('.gcl').onclick=()=>o.remove();o.addEventListener('click',e=>{if(e.target===o||(e.target.parentElement&&e.target.parentElement.parentElement===b&&e.target.tagName!=='IMG'))o.remove()})}
+function galG(){const c=S.cfg&&S.cfg.gallery;return (c&&Object.keys(c).length)?c:(S.gal||{})}
+function galFirst(n){const G=galG();if(!n)return '';if(G[n]&&G[n].length)return G[n][0];const q=nzA(n);let k=Object.keys(G).find(x=>nzA(x)===q)||Object.keys(G).find(x=>{const a=nzA(x);return a.includes(q)||q.includes(a)});return k&&G[k].length?G[k][0]:''}
+function galStrip(n){const L=galG()[n];if(!L||!L.length)return '';return '<div class="gst">'+L.map((f,i)=>'<img loading="lazy" src="'+f+'" alt="" data-act="galo" data-v="'+esc(n)+'" data-i="'+i+'">').join('')+'</div>'}
+function galOpen(n,i){const L=galG()[n]||[];if(!L.length)return;let o=document.getElementById('galbox');if(o)o.remove();o=document.createElement('div');o.id='galbox';o.innerHTML='<div class="gbx" dir="ltr">'+L.map(f=>'<div><img src="'+f+'" alt=""></div>').join('')+'</div><button class="gcl" aria-label="إغلاق">×</button><div class="gct" dir="ltr"></div>';document.body.appendChild(o);const b=o.querySelector('.gbx'),c=o.querySelector('.gct'),w=()=>b.clientWidth||1,up=()=>{c.textContent=(Math.round(b.scrollLeft/w())+1)+' / '+L.length};requestAnimationFrame(()=>{b.scrollLeft=i*w();up()});b.addEventListener('scroll',up,{passive:true});o.querySelector('.gcl').onclick=()=>o.remove();o.addEventListener('click',e=>{if(e.target===o||(e.target.parentElement&&e.target.parentElement.parentElement===b&&e.target.tagName!=='IMG'))o.remove()})}
 const ACT={
   galo:d=>galOpen(d.v,+d.i||0),
   logout,

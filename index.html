@@ -313,7 +313,7 @@ function listsView(){
   if(!S.lists.length)return '<div class="empty">لا قوائم بعد.</div>';
   const L=S.lists.find(x=>x.date===S.cur).data,D=S.cur;
   const G=[['d','التحديث اليومي','cam','#148195,#0F6577',(L.items||[]).map((r,i)=>({r,i:i+1,sec:'d'}))]];
-  [['تعال نقولك','تعال نقولك','#F68E11,#D9780A'],['الطاهر','حلقات الطاهر','#57C26F,#2C9986'],['صلاح زايد','حلقات صلاح زايد','#7A6BD0,#5648A8']].forEach(([k,t,c])=>G.push([k,t,'tv',c,(L.prog||[]).map((r,i)=>({r,i:i+1,sec:'p'})).filter(x=>x.r.prog===k)]));
+  [['تعال نقولك','تعال نقولك','#F68E11,#D9780A'],['صلاح زايد','حلقات صلاح زايد','#7A6BD0,#5648A8'],['الطاهر','حلقات الطاهر','#57C26F,#2C9986']].forEach(([k,t,c])=>G.push([k,t,'tv',c,(L.prog||[]).map((r,i)=>({r,i:i+1,sec:'p'})).filter(x=>x.r.prog===k)]));
   if(!G.some(g=>g[0]===S.lg))S.lg='d';
   const isD=x=>!!(S.shot[D+'__'+x.sec+x.i]||autoShot(D,x.r,x.sec)),done=g=>g[4].filter(isD).length;G.forEach(g=>{g[4]=g[4].filter(x=>!isD(x)).concat(g[4].filter(isD))});
   const cards=G.map(g=>{const n=g[4].length,dn=done(g),pc=n?Math.round(dn*100/n):0;return '<button class="lq'+(S.lg===g[0]?' sel':'')+'" data-act="lgrp" data-v="'+g[0]+'" style="background:linear-gradient(135deg,'+g[3].split(',')[0]+','+g[3].split(',')[1]+')">'+hi(g[2])+'<b>'+g[1]+'</b><div><small>'+dn+' من '+n+'</small><div class="lbar"><i style="width:'+pc+'%"></i></div></div></button>'}).join('');

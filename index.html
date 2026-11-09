@@ -957,7 +957,7 @@ Object.assign(ACT,{cplink:async()=>{const u=location.origin+location.pathname;tr
 
 /* ===== team list + last seen ===== */
 const TEAM=[['hassan','حسن مبارك'],['hamza','حمزة الغرياني'],['mohamed','محمد الغرياني'],['anas','أنس بريكة'],['hadi','الهادي شلايك'],['osama','أسامة أبوسن'],['omar','عمر فتح الله'],['sakina','سكينة الغرياني'],['maysam','ميسم السنوسي'],['motasim','معتصم أبوجناح'],['shaibani','محمد الشيباني']];
-let _seenT=0;function touchSeen(){if(!sb||!S.me||Date.now()-_seenT<45000)return;_seenT=Date.now();try{Promise.resolve(sb.rpc('touch_seen')).catch(()=>{})}catch(e){}}
+document.addEventListener('visibilitychange',()=>{if(!document.hidden){_seenT=0;touchSeen()}});let _seenT=0;function touchSeen(){if(!sb||!S.me||Date.now()-_seenT<45000)return;_seenT=Date.now();try{Promise.resolve(sb.rpc('touch_seen')).catch(()=>{})}catch(e){}}
 function pl(n,a,b,c,d){return n===1?'نشط منذ '+a:n===2?'نشط منذ '+b:n<=10?'نشط منذ '+n+' '+c:'نشط منذ '+n+' '+d}
 function seenTxt(ms){if(!ms)return '';const m=Math.max(0,Math.round((Date.now()-ms)/60000));if(m<3)return 'نشط الآن';if(m<60)return pl(m,'دقيقة','دقيقتين','دقائق','دقيقة');const h=Math.round(m/60);if(h<24)return pl(h,'ساعة','ساعتين','ساعات','ساعة');const d=Math.round(h/24);if(d<=30)return pl(d,'يوم','يومين','أيام','يوماً');return 'نشط منذ أكثر من شهر'}
 function teamView(){

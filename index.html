@@ -486,7 +486,7 @@ const GST={empty:'فارغ',draft:'مسودة',review:'قيد المراجعة',
 const GCL={review:'warn',needs_edit:'warn',approved:'ok',published:'ok'};
 const gpill=s=>'<span class="tag '+(GCL[s]||'')+'">'+GST[s]+'</span>';
 const canG=()=>['writer','owner','exec','ops'].includes(R())||isW();
-const gtabs=()=>R()==='owner'?[['review','المراجعة'],['weekly','مقترحاتي'],['ideas','أفكار الأسبوع'],['approved','المعتمد'],['tpl','القوالب والمشاريع']]:isW()?[['weekly','المقترحات الأسبوعية'],['ideas','أفكار خلال الأسبوع'],['notes','ملاحظاتي']]:[['board','المقترحات'],['approved','المعتمد']];
+const gtabs=()=>R()==='owner'?[['weekly','مقترحاتي'],['review','المراجعة'],['ideas','أفكار الأسبوع'],['approved','المعتمد'],['tpl','القوالب والمشاريع']]:isW()?[['weekly','المقترحات الأسبوعية'],['ideas','أفكار خلال الأسبوع'],['notes','ملاحظاتي']]:[['board','المقترحات'],['approved','المعتمد']];
 const gcy=()=>S.cfg.g_cycle||null,gtpl=()=>(S.cfg.g_templates&&S.cfg.g_templates.list)||[],gprj=()=>{const p=S.cfg.g_projects||{};return{active:p.active||[],stopped:p.stopped||[]}};
 const geff=it=>{if(!it)return'empty';if(!it.v)return'draft';if(it.state==='submitted'&&it.v>(it.for_version||0))return'review';return it.status||'review'};
 const gedit=s=>['empty','draft','needs_edit'].includes(s);

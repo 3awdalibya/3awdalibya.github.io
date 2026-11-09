@@ -213,7 +213,7 @@ function bindChange(force){
     const {error}=await sb.auth.updateUser({password:a});if(error)return say('#cm',errAr(error),'err');await sb.rpc('password_changed');S.me.must_change=false;say('#cm','تم حفظ الرمز','ok');if(force){await loadAll();render()}};
 }
 const isFilm=()=>R()==='filming'||/التصوير/.test((S.me&&S.me.title)||'');
-const myTabs=()=>{const t=[['home','الرئيسية']];if(SHOOTR())t.push(['lists','قوائم التصوير']);t.push(['upd','متابعة المشاريع'],['cp','مشاريع خطة عودة الحياة'],['prog','برامج المنصة'],['meet','الاجتماعات'],['stats','الإحصائيات']);if(canIdea())t.push(['pid','أفكار البرامج وReel']);if(canG()&&!isFilm())t.push(['gfx','مقترحات الجرافيك']);t.push(['idea','أفكار ونشر']);if(!isFilm()&&R()!=='editing')t.push(['avoid','نبتعد عن تكراره']);if(PRODV())t.push(['prod','إنتاجية الفريق']);t.push(['ph','دفتر الأرقام'],['dev','صفحات الأجهزة'],['prob','مشاكل العمل بالطريقة السابقة'],['why','لماذا أُنشئ الموقع'],['gd','دليل المنصة'],['inst','تثبيت الموقع على الشاشة'],['team','أعضاء الفريق']);if(R()==='owner')t.push(['ppl','الأشخاص']);t.push(['bal','ملاحظة أو بلاغ'],['acc','حسابي']);if(R()==='tracker')return t.filter(x=>['home','upd','ph','gd','inst','acc'].includes(x[0]));return t};
+const myTabs=()=>{const t=[['home','الرئيسية']];if(SHOOTR())t.push(['lists','قوائم التصوير']);t.push(['upd','متابعة المشاريع'],['cp','مشاريع خطة عودة الحياة'],['prog','برامج المنصة'],['meet','الاجتماعات'],['stats','الإحصائيات']);if(canIdea())t.push(['pid','أفكار البرامج وReel']);if(canG()&&!isFilm())t.push(['gfx','مقترحات الجرافيك']);t.push(['idea','أفكار ونشر']);if(!isFilm()&&R()!=='editing')t.push(['avoid','نبتعد عن تكراره']);if(PRODV())t.push(['prod','إنتاجية الفريق']);t.push(['ph','دفتر الأرقام'],['dev','صفحات الأجهزة'],['prob','مشاكل العمل بالطريقة السابقة'],['why','لماذا أُنشئ الموقع'],['gd','دليل المنصة'],['inst','تثبيت الموقع على الشاشة']);if(OSA())t.push(['team','أعضاء الفريق'],['ppl','الأشخاص']);t.push(['bal','ملاحظة أو بلاغ'],['acc','حسابي']);if(R()==='tracker')return t.filter(x=>['home','upd','ph','gd','inst','acc'].includes(x[0]));return t};
 
 const AVT={mohamed:'avatars/mohamed.jpg'};const av=(u,c)=>AVT[u]?'<img class="'+(c||'av')+'" alt="" src="'+AVT[u]+'">':'';
 const nzA=t=>String(t||'').replace(/[أإآ]/g,'ا').replace(/ة/g,'ه').replace(/ى/g,'ي').replace(/[\u064B-\u0652]/g,'').toLowerCase();
@@ -245,6 +245,7 @@ async function loadAll(){
 function render(){
   if(!S.me)return;if(!myTabs().some(t=>t[0]===S.tab))S.tab='home';
   const tabs=orderedTabs(),lab=Object.fromEntries(tabs),tot=tabs.reduce((a,t)=>a+tabBadge(t[0]),0);
+  if((S.tab==='team'||S.tab==='ppl')&&!OSA())S.tab='home';
   const V={inst:instView,team:teamView,prod:prodView,gd:gdView,cp:cpView,home:homeView,lists:listsView,prog:progView,meet:meetView,stats:statsView,upd:()=>staleBox()+updView(),pid:pidView,gfx:gView,idea:ideaView,avoid:avoidView,dev:devView,why:whyView,prob:probView,ph:phView,bal:balView,acc:accView,ppl:pplView};
   const item=([k,l])=>{const b=tabBadge(k);return '<button class="dmi'+(S.tab===k?' on':'')+'" data-tab="'+k+'"><span class="dic">'+hi(TABIC[k]||'more')+'</span>'+esc(l)+(b?'<span class="dn">'+b+'</span>':'')+'</button>'};
   const drawer='<div id="drw"><div class="dov" data-act="menu"></div><aside class="dpanel" role="dialog" aria-label="القائمة"><div class="dme"><img src="'+(AVT[S.me.username]||ICON)+'" alt=""><div><b>'+esc(S.me.name)+'</b><small>'+esc(S.me.title||ROLES[R()])+'</small></div></div><div class="dlist">'+tabs.filter(t=>t[0]!=='acc').map(item).join('')+'</div><div class="dsep"></div><div class="dlist">'+item(['acc','حسابي'])+'<button class="dmi" data-act="logout"><span class="dic">'+hi('exit')+'</span>تسجيل الخروج</button></div></aside></div>';
@@ -969,6 +970,7 @@ function teamView(){
 }
 
 /* ===== Phase 8b: team productivity (osama, hassan, hamza, hadi) ===== */
+const OSA=()=>!!S.me&&S.me.username==='osama';
 const PRODV=()=>!!S.me&&['osama','hassan','hamza','hadi'].includes(S.me.username);
 const MAR=['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'],WK=['الأول','الثاني','الثالث','الرابع','الخامس'];
 const HOSTS=[{n:'محمد الخباط',k:'تعال نقولك 2026',t:'تعال نقولك'},{n:'الطاهر قنور',k:'حلقات الطاهر',t:'حلقات الطاهر'},{n:'صلاح زايد',k:'حلقات صلاح زايد',t:'حلقات صلاح زايد'}];

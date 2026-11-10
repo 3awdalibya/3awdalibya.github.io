@@ -232,7 +232,7 @@ function tabBadge(k){const me=S.me.id;
   return 0}
 async function loadAll(){
   touchSeen();
-  if(!S.gal){try{S.gal=await (await fetch('gallery.json?v=4',{cache:'no-store'})).json()}catch(e){S.gal={}}}
+  if(!S.gal){try{S.gal=await (await fetch('gallery.json?v=5',{cache:'no-store'})).json()}catch(e){S.gal={}}}
   const q=async p=>{try{const r=await p;return r.error?[]:(r.data||[])}catch(e){return[]}};
   const J={cfg:sb.from('config').select('*'),meetings:sb.from('meetings').select('*').order('at'),notes:sb.from('meeting_notes').select('*'),occ:sb.from('occasions').select('*'),swaps:sb.from('swaps').select('*'),devices:sb.from('devices').select('*').order('ts'),phones:sb.from('phones').select('*').order('name'),reports:sb.from('reports').select('*').order('ts',{ascending:false}),pub:sb.from('pub_ideas').select('*').order('ts',{ascending:false}).limit(300),pu:sb.from('pupdates').select('*').order('ts',{ascending:false}).limit(300),ideas:sb.from('ideas').select('*').order('ts',{ascending:false}),people:sb.from('profiles').select('*').order('created_at')};
   if(canG()){J.gi=sb.from('gitems').select('*').order('updated_at',{ascending:false}).limit(3000);if(R()==='owner')J.gp=sb.from('gpriv').select('*')}

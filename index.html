@@ -818,7 +818,7 @@ const tic=(k,c)=>'<span class="tic'+(c?' '+c:'')+'">'+hi(k)+'</span>';
 function cpView(){
   const D=S.cfg.cityproj;if(D&&D.items)return '<input id="cpq" type="search" class="no-print" placeholder="ابحث عن مشروع: اكتب حرفاً من الاسم" autocomplete="off" oninput="cpSearch()" value="'+esc(S.cpQ||'')+'" style="margin-bottom:10px"><div id="cpres"></div><div id="cpmain">'+cpMain()+'</div>';return cpMain()}
 function cpSearch(){const i=document.getElementById('cpq'),r=document.getElementById('cpres'),m=document.getElementById('cpmain');if(!i||!r)return;S.cpQ=i.value;const q=nzA(i.value).trim(),I=(S.cfg.cityproj&&S.cfg.cityproj.items)||[];if(!q){r.innerHTML='';if(m)m.hidden=false;return}if(m)m.hidden=true;const l=I.filter(x=>nzA(x.n).includes(q)||nzA(x.c).includes(q)).slice(0,60);r.innerHTML='<div class="feed">'+(l.length?l.map(x=>'<button class="cph cpsr" data-act="cpgo" data-c="'+esc(x.c)+'" data-k="'+esc(x.k)+'" data-v="'+esc(x.n)+'"><span class="pjn">'+esc(x.n)+'</span><small class="hint">'+esc(x.c==='عام'?'مشاريع عامة':x.c)+' · '+esc(x.k)+(x.s?' · '+esc(x.s):'')+'</small></button>').join(''):'<div class="empty">لا نتائج.</div>')+'</div>'}
-function cpThumb(x){const L=x.new&&galG()[x.n];return L&&L.length?'<img class="cpth" loading="lazy" src="'+L[0]+'" alt="">':''}
+function cpThumb(x){const f=galFirst(x.n);return f?'<img class="cpth" loading="lazy" src="'+f+'" alt="">':''}
 function cpMain(){
   const D=S.cfg.cityproj;if(!D||!D.items)return '<div class="empty">لم تُحمَّل قائمة المشاريع بعد. (تحتاج تشغيل ملف SQL المرحلة 6 مرة واحدة.)</div>';
   const city=S.cpC,cat=S.cpK,I=D.items;
